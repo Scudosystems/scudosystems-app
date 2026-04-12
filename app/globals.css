@@ -1,0 +1,245 @@
+/* Fonts loaded via next/font in app/layout.tsx */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background:         210 40% 98%;
+    --foreground:         222 47% 6%;
+    --card:               0 0% 100%;
+    --card-foreground:    222 47% 6%;
+    --popover:            0 0% 100%;
+    --popover-foreground: 222 47% 6%;
+    --primary:            221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary:          214 32% 91%;
+    --secondary-foreground: 222 47% 11%;
+    --muted:              214 32% 91%;
+    --muted-foreground:   215 16% 47%;
+    --accent:             38 92% 50%;
+    --accent-foreground:  0 0% 100%;
+    --destructive:        0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border:             214 32% 91%;
+    --input:              214 32% 91%;
+    --ring:               221 83% 53%;
+    --radius:             0.75rem;
+  }
+
+  * { @apply border-border; }
+
+  body { @apply bg-white text-foreground font-sans antialiased; }
+}
+
+@layer components {
+  /* ─── Buttons ──────────────────────────────────────────────────── */
+  .btn-primary {
+    @apply text-white px-6 py-3 rounded-xl font-semibold text-sm
+           transition-all duration-200 active:scale-95;
+    background-color: #0d9488;
+    box-shadow: 0 10px 15px rgba(13, 148, 136, 0.25);
+  }
+  .btn-primary:hover {
+    background-color: #0f766e;
+    box-shadow: 0 12px 20px rgba(13, 148, 136, 0.3);
+  }
+
+  .btn-secondary {
+    @apply bg-white px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200
+           active:scale-95 shadow-sm;
+    color: #0d9488;
+    border: 1px solid rgba(13, 148, 136, 0.2);
+  }
+  .btn-secondary:hover {
+    background-color: rgba(13, 148, 136, 0.05);
+  }
+
+  /* ─── Cards ────────────────────────────────────────────────────── */
+  .card      { @apply bg-white rounded-2xl shadow-sm border border-border p-6; }
+  .stat-card { @apply bg-white rounded-2xl p-6 border border-border shadow-sm hover:shadow-md transition-shadow; }
+
+  /* ─── Sidebar ──────────────────────────────────────────────────── */
+  .sidebar-link {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium
+           transition-all duration-150 text-slate-600 hover:text-slate-900 hover:bg-slate-50;
+  }
+  .sidebar-link.active {
+    color: #0d9488;
+    background-color: rgba(13, 148, 136, 0.1);
+    border-left: 2px solid #0d9488;
+    padding-left: calc(1rem - 2px);
+  }
+
+  /* ─── Badges ───────────────────────────────────────────────────── */
+  .badge        { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold; }
+  .badge-green  { @apply badge bg-emerald-50 text-emerald-700; }
+  .badge-yellow { @apply badge bg-amber-50 text-amber-700; }
+  .badge-red    { @apply badge bg-red-50 text-red-700; }
+  .badge-blue   { @apply badge bg-blue-50 text-blue-700; }
+  .badge-grey   { @apply badge bg-slate-100 text-slate-600; }
+
+  /* ─── Section fade-in-up helper ────────────────────────────────── */
+  .reveal {
+    @apply opacity-0 translate-y-4 transition-all duration-700 ease-out;
+  }
+  .reveal.visible {
+    @apply opacity-100 translate-y-0;
+  }
+}
+
+/* ─── Dashboard dark mode ─────────────────────────────────────── */
+.dashboard-shell {
+  --dash-bg: #f8fafc;
+  --dash-surface: #ffffff;
+  --dash-border: #e2e8f0;
+  --dash-text: #0f172a;
+}
+.dashboard-shell.dashboard-dark {
+  --dash-bg: #0b1220;
+  --dash-surface: #0f172a;
+  --dash-border: #1e293b;
+  --dash-text: #e2e8f0;
+  color: var(--dash-text);
+}
+.dashboard-shell.dashboard-dark .bg-white { background-color: var(--dash-surface) !important; }
+.dashboard-shell.dashboard-dark .bg-slate-50 { background-color: var(--dash-bg) !important; }
+.dashboard-shell.dashboard-dark .bg-slate-100 { background-color: #1e293b !important; }
+.dashboard-shell.dashboard-dark .bg-slate-200 { background-color: #243047 !important; }
+.dashboard-shell.dashboard-dark [class~="bg-white/90"] { background-color: rgba(15, 23, 42, 0.9) !important; }
+.dashboard-shell.dashboard-dark .bg-\[\#f8f6f1\] { background-color: var(--dash-bg) !important; }
+.dashboard-shell.dashboard-dark .border-border { border-color: var(--dash-border) !important; }
+.dashboard-shell.dashboard-dark .border-slate-200 { border-color: var(--dash-border) !important; }
+.dashboard-shell.dashboard-dark .text-dark { color: var(--dash-text) !important; }
+.dashboard-shell.dashboard-dark [class~="text-dark/60"] { color: rgba(226, 232, 240, 0.65) !important; }
+.dashboard-shell.dashboard-dark [class~="text-dark/50"] { color: rgba(226, 232, 240, 0.6) !important; }
+.dashboard-shell.dashboard-dark [class~="text-dark/40"] { color: rgba(226, 232, 240, 0.5) !important; }
+.dashboard-shell.dashboard-dark [class~="text-dark/30"] { color: rgba(226, 232, 240, 0.4) !important; }
+.dashboard-shell.dashboard-dark .text-slate-500 { color: #94a3b8 !important; }
+.dashboard-shell.dashboard-dark .text-slate-600 { color: #cbd5f5 !important; }
+.dashboard-shell.dashboard-dark .text-slate-400 { color: #94a3b8 !important; }
+.dashboard-shell.dashboard-dark .text-slate-300 { color: #64748b !important; }
+.dashboard-shell.dashboard-dark .text-gray-400 { color: #94a3b8 !important; }
+.dashboard-shell.dashboard-dark .text-gray-600 { color: #cbd5f5 !important; }
+.dashboard-shell.dashboard-dark .hover\:bg-slate-100:hover { background-color: #1e293b !important; }
+.dashboard-shell.dashboard-dark .hover\:bg-slate-200:hover { background-color: #243047 !important; }
+.dashboard-shell.dashboard-dark .hover\:text-slate-900:hover { color: #f8fafc !important; }
+
+/* ─── Scrollbar ─────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+/* ─── Booking page brand colour override ────────────────────────── */
+.booking-page .brand-btn    { background-color: var(--brand-colour, #2563EB); }
+.booking-page .brand-text   { color: var(--brand-colour, #2563EB); }
+.booking-page .brand-border { border-color: var(--brand-colour, #2563EB); }
+
+/* ─── Booking page dark industry themes ─────────────────────────── */
+.booking-dark {
+  --book-text:        #ffffff;
+  --book-text-muted:  rgba(255,255,255,0.55);
+  --book-text-faint:  rgba(255,255,255,0.35);
+  --book-border:      rgba(255,255,255,0.08);
+  color: var(--book-text);
+}
+/* Repoint all the hardcoded colour classes used in booking page */
+.booking-dark .text-dark              { color: var(--book-text) !important; }
+.booking-dark [class~="text-dark/70"]          { color: rgba(255,255,255,0.70) !important; }
+.booking-dark [class~="text-dark/60"]          { color: rgba(255,255,255,0.60) !important; }
+.booking-dark [class~="text-dark/50"]          { color: rgba(255,255,255,0.55) !important; }
+.booking-dark [class~="text-dark/40"]          { color: rgba(255,255,255,0.40) !important; }
+.booking-dark [class~="text-dark/30"]          { color: rgba(255,255,255,0.30) !important; }
+.booking-dark [class~="text-dark/20"]          { color: rgba(255,255,255,0.20) !important; }
+.booking-dark .bg-white               { background-color: rgba(255,255,255,0.05) !important; }
+.booking-dark [class~="bg-white/80"]           { background-color: rgba(255,255,255,0.07) !important; }
+.booking-dark [class~="bg-white/90"]           { background-color: rgba(255,255,255,0.07) !important; }
+.booking-dark .bg-\[\#f8f6f1\]        { background-color: rgba(255,255,255,0.04) !important; }
+.booking-dark .border-border          { border-color: rgba(255,255,255,0.1) !important; }
+.booking-dark [class~="border-border/60"]      { border-color: rgba(255,255,255,0.08) !important; }
+.booking-dark .shadow-sm              { box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; }
+.booking-dark .shadow-md              { box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important; }
+.booking-dark .hover\:bg-\[\#f8f6f1\]:hover { background-color: rgba(255,255,255,0.08) !important; }
+.booking-dark .hover\:shadow-md:hover       { box-shadow: 0 4px 20px rgba(255,255,255,0.06) !important; }
+.booking-dark input,
+.booking-dark textarea,
+.booking-dark select {
+  background-color: rgba(255,255,255,0.06) !important;
+  border-color: rgba(255,255,255,0.15) !important;
+  color: #ffffff !important;
+  caret-color: #ffffff;
+}
+.booking-dark input::placeholder,
+.booking-dark textarea::placeholder { color: rgba(255,255,255,0.35) !important; }
+.booking-dark input:focus,
+.booking-dark textarea:focus,
+.booking-dark select:focus {
+  border-color: var(--brand-colour, rgba(255,255,255,0.4)) !important;
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.07) !important;
+}
+/* Texture overlay for dark pages */
+.booking-dark::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.015) 1px, transparent 1px),
+                    radial-gradient(circle at 80% 80%, rgba(255,255,255,0.01) 1px, transparent 1px);
+  background-size: 48px 48px, 64px 64px;
+  pointer-events: none;
+  z-index: 0;
+}
+.booking-dark > * { position: relative; z-index: 1; }
+
+/* Glass card shimmer on hover */
+.booking-dark .glass-card {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.booking-dark .glass-card:hover {
+  background-color: rgba(255,255,255,0.09) !important;
+}
+
+/* Step pill — filled variant for dark themes */
+.step-pill-filled {
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.7);
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.step-pill-filled.active {
+  background: var(--brand-colour, #6d28d9);
+  color: #ffffff;
+  border-color: transparent;
+}
+/* Step pill — outline variant */
+.step-pill-outline {
+  background: transparent;
+  border: 1.5px solid rgba(0,0,0,0.25);
+  color: rgba(0,0,0,0.5);
+}
+.step-pill-outline.active {
+  border-color: var(--brand-colour, #2563eb);
+  color: var(--brand-colour, #2563eb);
+}
+
+/* ─── Hero glow background ──────────────────────────────────────── */
+.hero-glow {
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(37,99,235,0.12) 0%, transparent 70%);
+}
+
+/* ─── Gradient text ─────────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Animated notification ping ───────────────────────────────── */
+@keyframes ping-once {
+  0%   { transform: scale(1); opacity: 1; }
+  70%  { transform: scale(1.8); opacity: 0; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+.ping-once { animation: ping-once 1.2s ease-out; }

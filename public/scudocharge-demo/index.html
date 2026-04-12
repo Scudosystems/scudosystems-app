@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <title>Scudo Charge | Demo Session</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/scudocharge-demo/assets/theme.css">
+  <link rel="stylesheet" href="/scudocharge-demo/assets/payment.css">
+</head>
+<body class="payment-page">
+  <div class="page-noise"></div>
+
+  <main class="payment-shell" id="paymentScreen">
+    <section class="payment-hero">
+      <article class="payment-heading surface-card">
+        <div class="brand-lockup">
+          <div class="brand-mark" data-brand-mark></div>
+          <div>
+            <div class="eyebrow" data-brand="productName"></div>
+            <div class="muted" data-brand="siteName"></div>
+          </div>
+        </div>
+        <h1 class="payment-title" data-brand="paymentTitle"></h1>
+        <p class="payment-copy" data-brand="tagline"></p>
+        <div class="pill-row">
+          <span class="pill"><strong data-brand="siteId"></strong></span>
+          <span class="pill"><strong data-brand="siteRegion"></strong></span>
+          <span class="pill"><strong data-brand="liveStatus"></strong></span>
+          <span class="pill"><strong>Demo preview</strong></span>
+        </div>
+      </article>
+
+      <div class="hero-grid">
+        <article class="info-card surface-card">
+          <div class="eyebrow">Site Overview</div>
+          <h2 class="site-name" data-brand="siteName"></h2>
+          <p class="muted" id="siteMeta"></p>
+          <div class="pill-row">
+            <span class="pill"><strong data-brand="siteId"></strong></span>
+            <span class="pill"><strong id="operatorSiteMeta"></strong></span>
+          </div>
+        </article>
+
+        <article class="info-card surface-card">
+          <div class="eyebrow">Driver Journey</div>
+          <ol class="instruction-list" id="instructionList"></ol>
+        </article>
+
+        <article class="info-card surface-card full">
+          <div class="eyebrow">Contact</div>
+          <div class="support-stack">
+            <a class="support-link" id="supportEmail" href="#"></a>
+            <span class="support-link" id="supportPhone"></span>
+            <span class="muted" id="supportHours"></span>
+          </div>
+          <p class="muted">This is a hosted demo of the ScudoCharge customer payment experience.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="payment-panel">
+      <article class="payment-panel-card surface-card">
+        <div class="panel-header">
+          <div>
+            <div class="eyebrow" data-brand="paymentEyebrow"></div>
+            <h2>Charger and amount</h2>
+          </div>
+          <span class="promo-badge" id="promoBadge" style="display:none"></span>
+        </div>
+
+        <div class="selection-card">
+          <div class="selection-copy">
+            <span class="label">Selected charger</span>
+            <strong id="selectedChargerName">Choose a charger</strong>
+            <span id="selectedChargerMeta">Select the charger or connector your driver will use.</span>
+          </div>
+          <button class="ghost-button" id="selectChargerButton" type="button">Select charger</button>
+        </div>
+
+        <div class="selection-card">
+          <div class="selection-copy">
+            <span class="label">Site reference</span>
+            <strong id="selectedSiteRef">--</strong>
+            <span id="selectedHardwareRef">Select a charger to reveal the hardware reference.</span>
+          </div>
+        </div>
+
+        <div class="amount-card">
+          <div>
+            <div class="eyebrow">Charging credit</div>
+            <p class="muted" id="paymentHint"></p>
+          </div>
+          <div class="amount-controls">
+            <button class="amount-button" id="amountMinus" type="button">−</button>
+            <div class="amount-display">
+              <span class="amount-number" id="amountNumber">£0.00</span>
+              <span class="amount-subtitle">Prepaid session amount</span>
+            </div>
+            <button class="amount-button" id="amountPlus" type="button">+</button>
+          </div>
+          <div class="preset-grid" id="presetGrid"></div>
+        </div>
+
+        <div class="promo-card" id="promoCard" style="display:none">
+          <div>
+            <div class="eyebrow">Charging boost</div>
+            <p class="muted">Optional operator incentives can lift average order value and help drive off-peak demand.</p>
+          </div>
+          <div class="promo-grid" id="promoGrid"></div>
+        </div>
+
+        <div class="session-summary">
+          <div class="summary-row">
+            <span>Customer pays</span>
+            <strong id="summaryPaid">£0.00</strong>
+          </div>
+          <div class="summary-row">
+            <span>Charging credit issued</span>
+            <strong id="summaryCredit">£0.00</strong>
+          </div>
+          <div class="summary-row">
+            <span>Promotion</span>
+            <strong id="summaryPromo">No promotional credit selected</strong>
+          </div>
+          <div class="summary-row">
+            <span>Target charger</span>
+            <strong id="summaryCharger">No charger selected</strong>
+          </div>
+        </div>
+
+        <div class="status-inline" id="paymentStatus"></div>
+
+        <button class="primary-button" id="payButton" type="button">Preview demo session</button>
+
+        <div class="payments-row" id="paymentMethods"></div>
+
+        <div class="payment-footer">
+          <span data-brand="paymentFooterNote"></span>
+          <span data-brand="paymentFooterMeta"></span>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <section class="success-screen" id="successScreen" hidden>
+    <article class="success-card surface-card">
+      <div class="brand-lockup">
+        <div class="success-badge">✓</div>
+        <div>
+          <div class="eyebrow">Session ready</div>
+          <h2 id="successTitle">Charging credit authorised</h2>
+          <p class="muted" id="successBody">The charging command has been accepted.</p>
+        </div>
+      </div>
+
+      <div class="success-detail-grid">
+        <article class="detail-card">
+          <span class="label">Paid amount</span>
+          <strong id="successPaid"></strong>
+        </article>
+        <article class="detail-card">
+          <span class="label">Charging credit</span>
+          <strong id="successCredit"></strong>
+        </article>
+        <article class="detail-card">
+          <span class="label">Charger</span>
+          <strong id="successCharger"></strong>
+        </article>
+        <article class="detail-card">
+          <span class="label">Site</span>
+          <strong id="successSite"></strong>
+        </article>
+        <article class="detail-card">
+          <span class="label">Pay reference</span>
+          <strong id="successPayId"></strong>
+        </article>
+      </div>
+
+      <div class="button-row">
+        <button class="primary-button" id="startAnotherButton" type="button">Start another session</button>
+      </div>
+    </article>
+  </section>
+
+  <div class="modal" id="chargerModal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="section-header">
+        <div>
+          <div class="eyebrow">Choose charger</div>
+          <h2>Available connectors</h2>
+        </div>
+        <button class="ghost-button" id="closeModalButton" type="button">Close</button>
+      </div>
+      <div class="charger-grid" id="chargerGrid"></div>
+      <div class="modal-actions">
+        <span class="muted">Demo preview only. No real payment is taken.</span>
+        <button class="secondary-button" id="modalDismissButton" type="button">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <script>window.SCUDO_DEMO_MODE = true;</script>
+  <script src="/scudocharge-demo/assets/operator-config.js"></script>
+  <script src="/scudocharge-demo/assets/demo-data.js"></script>
+  <script src="/scudocharge-demo/assets/app-core.js"></script>
+  <script src="/scudocharge-demo/assets/payment-app.js"></script>
+</body>
+</html>
