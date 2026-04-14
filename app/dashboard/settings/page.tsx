@@ -5,7 +5,7 @@ import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { VERTICALS } from '@/lib/verticals'
 import { getVerticalPricing } from '@/lib/pricing'
 import { formatCurrency } from '@/lib/utils'
-import { fetchLatestTenant } from '@/lib/tenant'
+import { fetchLatestTenant, bustTenantCache } from '@/lib/tenant'
 import { Save, AlertTriangle, ExternalLink, Check, Sparkles, CheckCircle2, Loader2 } from 'lucide-react'
 import type { Tenant } from '@/types/database'
 
@@ -42,6 +42,7 @@ export default function SettingsPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [deleteError, setDeleteError] = useState('')
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchLatestTenant(supabase, '*')
@@ -57,7 +58,36 @@ export default function SettingsPage() {
   const save = async () => {
     if (!tenant) return
     setSaving(true)
-    await (supabase.from('tenants') as any).update(form).eq('id', tenant.id)
+    setSaveError(null)
+    // Whitelist every column the tenants table actually has so unknown keys
+    // never cause PostgREST to reject the entire update silently.
+    const ALLOWED_KEYS: (keyof Tenant)[] = [
+      'business_name', 'slug', 'vertical', 'brand_colour', 'logo_url',
+      'booking_page_headline', 'booking_page_subtext', 'booking_page_theme',
+      'booking_page_cta_label', 'booking_page_font', 'booking_page_button_style',
+      'booking_page_enabled',
+      'booking_page_ab_enabled', 'booking_page_ab_split', 'booking_page_ab_auto_apply',
+      'booking_page_variant_b_headline', 'booking_page_variant_b_subtext',
+      'booking_page_variant_b_cta_label', 'booking_page_variant_b_theme',
+      'booking_page_variant_b_font', 'booking_page_variant_b_button_style',
+      'booking_page_variant_b_brand_colour',
+      'booking_poster_offer',
+      'email_reminders_enabled', 'sms_reminders_enabled',
+      'daily_summary_email', 'new_booking_sms',
+      'cancellation_policy', 'staff_guidelines',
+      'payment_link', 'payment_link_label', 'payment_link_note',
+      'plan_status',
+    ]
+    const payload = Object.fromEntries(
+      ALLOWED_KEYS.filter(k => k in form).map(k => [k, (form as any)[k]])
+    )
+    const { error } = await supabase.from('tenants').update(payload as any).eq('id', tenant.id)
+    if (error) {
+      setSaveError(error.message)
+      setSaving(false)
+      return
+    }
+    bustTenantCache()
     setTenant(t => t ? { ...t, ...form } as Tenant : t)
     setSaving(false)
     setSaved(true)
@@ -279,10 +309,17 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
-          <button onClick={save} disabled={saving}
-            className="btn-primary flex items-center gap-2 py-2.5 px-6">
-            {saved ? <><Check className="w-4 h-4" /> Saved!</> : saving ? 'Saving…' : <><Save className="w-4 h-4" /> Save Changes</>}
-          </button>
+          <div className="flex flex-col items-start gap-2">
+            <button onClick={save} disabled={saving}
+              className="btn-primary flex items-center gap-2 py-2.5 px-6">
+              {saved ? <><Check className="w-4 h-4" /> Saved!</> : saving ? 'Saving…' : <><Save className="w-4 h-4" /> Save Changes</>}
+            </button>
+            {saveError && (
+              <p className="text-xs text-red-600 flex items-center gap-1">
+                <AlertTriangle className="w-3 h-3" /> {saveError}
+              </p>
+            )}
+          </div>
         </div>
       )}
 
@@ -377,7 +414,7 @@ export default function SettingsPage() {
                   </button>
                 )}
                 {!tenant?.stripe_subscription_id && (
-                  <p className="text-xs text-dark/40">Start your 7‑day free trial with Stripe.</p>
+                  <p className="text-xs text-dark/40">Start your 14‑day free trial.</p>
                 )}
               </div>
             </div>
@@ -430,6 +467,60 @@ export default function SettingsPage() {
 
       {tab === 'Integrations' && (
         <div className="space-y-4">
+
+          {/* ── Payment Link ─────────────────────────────────────────────── */}
+          <div className="bg-white rounded-2xl border border-border p-5 space-y-4">
+            <div>
+              <p className="font-semibold text-dark">Customer Payment Link</p>
+              <p className="text-sm text-dark/50 mt-1">
+                Add a link to your own payment page (PayPal, SumUp, Square, etc.). It will appear on the booking confirmation screen and in the confirmation email your customers receive.
+              </p>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-semibold text-dark/50 uppercase tracking-wider block mb-1">Payment URL</label>
+                <input
+                  type="url"
+                  placeholder="https://paypal.me/yourbusiness or https://pay.sumup.com/…"
+                  value={form.payment_link || ''}
+                  onChange={e => setForm(f => ({ ...f, payment_link: e.target.value || null }))}
+                  className="w-full h-10 px-4 rounded-xl border border-border text-sm focus:outline-none focus:border-teal"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-dark/50 uppercase tracking-wider block mb-1">Button Label</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Pay deposit via PayPal"
+                  value={form.payment_link_label || ''}
+                  onChange={e => setForm(f => ({ ...f, payment_link_label: e.target.value || null }))}
+                  className="w-full h-10 px-4 rounded-xl border border-border text-sm focus:outline-none focus:border-teal"
+                />
+                <p className="text-xs text-dark/40 mt-1">Leave blank to use "Pay now →" as default</p>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-dark/50 uppercase tracking-wider block mb-1">Note to customer <span className="font-normal">(optional)</span></label>
+                <input
+                  type="text"
+                  placeholder="e.g. Please use your booking ref as the payment reference"
+                  value={form.payment_link_note || ''}
+                  onChange={e => setForm(f => ({ ...f, payment_link_note: e.target.value || null }))}
+                  className="w-full h-10 px-4 rounded-xl border border-border text-sm focus:outline-none focus:border-teal"
+                />
+              </div>
+            </div>
+            <div className="flex flex-col items-start gap-2">
+              <button onClick={save} disabled={saving} className="btn-primary text-sm py-2 px-5">
+                {saving ? 'Saving…' : saved ? '✓ Saved' : 'Save Payment Link'}
+              </button>
+              {saveError && (
+                <p className="text-xs text-red-600 flex items-center gap-1">
+                  <AlertTriangle className="w-3 h-3" /> {saveError}
+                </p>
+              )}
+            </div>
+          </div>
+
           {[
             { name: 'Google Calendar', desc: 'Sync bookings to Google Calendar automatically', status: 'coming_soon' },
             { name: 'Zapier', desc: 'Connect to 5,000+ apps via Zapier webhooks', status: 'available' },

@@ -59,11 +59,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     planStatus: string | null
   } | null>(null)
   const [tenantLoaded, setTenantLoaded] = useState(false)
+  const [tenantId, setTenantId] = useState<string | null>(null)
 
   // Fetch tenant vertical once for conditional nav
   useEffect(() => {
-    fetchLatestTenant(supabase, 'vertical, business_name, plan_status, stripe_subscription_id')
-      .then(t => {
+    let cancelled = false
+    fetchLatestTenant(supabase, 'id, vertical, business_name, plan_status, stripe_subscription_id')
+      .then(async t => {
+        if (cancelled) return
+        if (t?.id) setTenantId(t.id as string)
         if (t?.vertical) setTenantVertical(t.vertical as string)
         setTenantSummary({
           businessName: t?.business_name || null,
@@ -71,7 +75,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         })
       })
       .catch(() => {})
-      .finally(() => setTenantLoaded(true))
+      .finally(() => {
+        if (!cancelled) setTenantLoaded(true)
+      })
+    return () => { cancelled = true }
   }, [])
 
   // Build nav items based on vertical — inject vertical-aware Services item
@@ -118,12 +125,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [theme])
 
   useEffect(() => {
+    if (!tenantId) return
     let cancelled = false
     const load = async () => {
       setNotifLoading(true)
       const { data } = await supabase
         .from('bookings')
         .select('id, created_at, booking_date, booking_time, status, customer_name, services(name)')
+        .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false })
         .limit(6)
       if (cancelled) return
@@ -138,7 +147,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
     load()
     return () => { cancelled = true }
-  }, [])
+  }, [tenantId])
 
   useEffect(() => {
     const handleClick = (event: MouseEvent) => {
@@ -277,11 +286,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 onClick={async () => {
                   const opening = !notifOpen
                   setNotifOpen(opening)
-                  if (opening) {
+                  if (opening && tenantId) {
                     setNotifLoading(true)
                     const { data } = await supabase
                       .from('bookings')
                       .select('id, created_at, booking_date, booking_time, status, customer_name, services(name)')
+                      .eq('tenant_id', tenantId)
                       .order('created_at', { ascending: false })
                       .limit(6)
                     const items = (data as any[]) || []
@@ -380,6 +390,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           )}
         </main>
       </div>
+
+      {/* Floating help button — always visible in dashboard */}
+      <a
+        href="mailto:hello@scudosystems.com?subject=Help%20needed%20in%20my%20dashboard&body=Hi%2C%20I%20need%20help%20with%20the%20following%3A%0A%0A"
+        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-2xl text-white text-sm font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105 select-none"
+        style={{ background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)' }}
+        title="Get help within hours"
+      >
+        <span className="text-base leading-none">💬</span>
+        Get help within hours
+      </a>
     </div>
   )
 }

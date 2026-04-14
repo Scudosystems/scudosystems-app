@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
+import { fetchLatestTenant } from '@/lib/tenant'
 import { formatCurrency } from '@/lib/utils'
 import { Search, Download, Mail, Phone } from 'lucide-react'
 
@@ -22,8 +23,12 @@ export default function CustomersPage() {
 
   useEffect(() => {
     async function load() {
+      const tenant = await fetchLatestTenant(supabase, 'id').catch(() => null)
+      if (!tenant?.id) { setLoading(false); return }
+
       const { data } = await (supabase.from('bookings') as any)
         .select('customer_name, customer_email, customer_phone, total_amount_pence, booking_date, status')
+        .eq('tenant_id', tenant.id)
         .order('booking_date', { ascending: false })
 
       if (!data) return setLoading(false)

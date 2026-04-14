@@ -737,7 +737,7 @@ function SupercarFleetPage({
         <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#c9a44a' }} />
         <p className="text-xs leading-relaxed text-slate-600">
           Cars appear on your booking page for customers to select. Optional extras are shown during checkout.
-          The security deposit hold is collected via Stripe and released after the rental ends.
+          Add your payment or deposit link in Settings → Integrations so customers can pay after booking.
         </p>
       </div>
 

@@ -1,14 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Plus, Trash2, Lock, Loader2, AlertTriangle } from 'lucide-react'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { fetchLatestTenant } from '@/lib/tenant'
 import { AVAILABILITY_VERTICALS } from '@/lib/industry-modules'
 import type { Availability, BlockedTime } from '@/types/database'
 
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-const HOURS = Array.from({ length: 15 }, (_, i) => i + 7) // 7am to 9pm
+const DAYS  = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+const HOURS = Array.from({ length: 15 }, (_, i) => i + 7) // 07:00 → 21:00
 
 export default function AvailabilityPage() {
   const supabase = createSupabaseBrowserClient()
@@ -17,24 +17,32 @@ export default function AvailabilityPage() {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const [availabilityAllowed, setAvailabilityAllowed] = useState(true)
-  const [toggling, setToggling] = useState<string | null>(null) // key = `${day}-${hour}`
-  const [newBlock, setNewBlock] = useState({ date: '', startTime: '12:00', endTime: '13:00', reason: '' })
+  const [newBlock, setNewBlock]       = useState({ date: '', startTime: '12:00', endTime: '13:00', reason: '' })
   const [addingBlock, setAddingBlock] = useState(false)
   const [savingBlock, setSavingBlock] = useState(false)
   const [removingBlock, setRemovingBlock] = useState<string | null>(null)
 
-  // ── Load ──────────────────────────────────────────────────────────────────
+  // ── Drag-to-paint refs ────────────────────────────────────────────────────────
+  // Using refs (not state) so drag state never triggers re-renders mid-paint.
+  const isDraggingRef   = useRef(false)
+  const paintModeRef    = useRef<boolean>(true)   // true = opening, false = closing
+  const visitedRef      = useRef<Set<string>>(new Set())  // cells processed this drag
+  const changedRef      = useRef<Set<string>>(new Set())  // cells actually modified
+  const snapshotRef     = useRef<Availability[]>([])      // availability at drag start
+  const avRef           = useRef<Availability[]>([])      // always-current availability
+
+  // Keep avRef in sync so event handlers always read fresh state
+  useEffect(() => { avRef.current = availability }, [availability])
+
+  // ── Load ──────────────────────────────────────────────────────────────────────
   useEffect(() => {
     const load = async () => {
       try {
         const tenant = await fetchLatestTenant(supabase, 'vertical')
         const allowed = tenant?.vertical ? AVAILABILITY_VERTICALS.has(tenant.vertical as string) : true
         setAvailabilityAllowed(allowed)
-        if (!allowed) {
-          setLoading(false)
-          return
-        }
-        const res = await fetch('/api/availability')
+        if (!allowed) { setLoading(false); return }
+        const res  = await fetch('/api/availability')
         const data = await res.json()
         if (data.error) { setLoadError(data.error); return }
         setAvailability(data.availability || [])
@@ -48,107 +56,147 @@ export default function AvailabilityPage() {
     load()
   }, [])
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
+  // ── Core helpers ──────────────────────────────────────────────────────────────
+  function hStr(hour: number) { return `${String(hour).padStart(2, '0')}:00` }
+
+  function slotAvailableIn(source: Availability[], day: number, hour: number) {
+    const h = hStr(hour)
+    return source.some(a =>
+      a.day_of_week === day && a.is_active && !a.staff_id &&
+      a.start_time <= h && a.end_time > h
+    )
+  }
+
+  // Read from the live state (for isAvailable in JSX render)
   const isAvailable = (day: number, hour: number) =>
-    availability.some(a =>
-      a.day_of_week === day &&
-      a.is_active &&
-      !a.staff_id &&
-      a.start_time <= `${String(hour).padStart(2, '0')}:00` &&
-      a.end_time   >  `${String(hour).padStart(2, '0')}:00`
-    )
+    slotAvailableIn(availability, day, hour)
 
-  // ── Toggle a slot ─────────────────────────────────────────────────────────
-  const toggleSlot = async (day: number, hour: number) => {
-    const key = `${day}-${hour}`
-    if (toggling === key) return // prevent double-tap
+  // Read from the always-current ref (for use inside event handlers / async functions)
+  const currentIsAvailable = (day: number, hour: number) =>
+    slotAvailableIn(avRef.current, day, hour)
 
-    const startTime = `${String(hour).padStart(2, '0')}:00`
-    const endTime   = `${String(hour + 1).padStart(2, '0')}:00`
+  // Read from the snapshot taken at drag-start
+  const snapIsAvailable = (day: number, hour: number) =>
+    slotAvailableIn(snapshotRef.current, day, hour)
 
-    // Optimistic update so the UI feels instant
-    const existingIdx = availability.findIndex(
-      a => a.day_of_week === day && a.start_time === startTime && !a.staff_id
-    )
-    if (existingIdx >= 0) {
-      setAvailability(prev => prev.map((a, i) =>
-        i === existingIdx ? { ...a, is_active: !a.is_active } : a
-      ))
-    } else {
-      // Temporary row so the cell lights up immediately
-      setAvailability(prev => [...prev, {
-        id: `__tmp__${key}`,
-        tenant_id: '',
-        staff_id: null,
-        day_of_week: day,
-        start_time: startTime,
-        end_time: endTime,
-        is_active: true,
-        created_at: '',
-      } as any])
-    }
+  // ── Optimistic state updater ──────────────────────────────────────────────────
+  function setSlotOptimistic(day: number, hour: number, open: boolean) {
+    const start = hStr(hour)
+    const end   = hStr(hour + 1)
+    const key   = `${day}-${hour}`
+    setAvailability(prev => {
+      const idx = prev.findIndex(a => a.day_of_week === day && a.start_time === start && !a.staff_id)
+      if (idx >= 0) {
+        if (prev[idx].is_active === open) return prev  // already correct, skip re-render
+        return prev.map((a, i) => i === idx ? { ...a, is_active: open } : a)
+      }
+      if (!open) return prev  // nothing to remove
+      return [...prev, {
+        id: `__tmp__${key}`, tenant_id: '', staff_id: null,
+        day_of_week: day, start_time: start, end_time: end,
+        is_active: true, created_at: '',
+      } as any]
+    })
+  }
 
-    setToggling(key)
+  // ── Persist a single slot (fires after optimistic update) ─────────────────────
+  async function persistSlot(day: number, hour: number) {
+    const start = hStr(hour)
+    const end   = hStr(hour + 1)
+    const key   = `${day}-${hour}`
     try {
-      const res = await fetch('/api/availability', {
+      const res  = await fetch('/api/availability', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ day_of_week: day, start_time: startTime, end_time: endTime }),
+        body: JSON.stringify({ day_of_week: day, start_time: start, end_time: end }),
       })
       const data = await res.json()
-      if (!res.ok) {
-        // Revert optimistic update on error
-        if (existingIdx >= 0) {
-          setAvailability(prev => prev.map((a, i) =>
-            i === existingIdx ? { ...a, is_active: !a.is_active } : a
-          ))
-        } else {
-          setAvailability(prev => prev.filter(a => a.id !== `__tmp__${key}`))
-        }
-        console.error('Availability toggle failed:', data.error)
-        return
+      if (res.ok && data.row) {
+        setAvailability(prev => {
+          const clean   = prev.filter(a => a.id !== `__tmp__${key}`)
+          const existIdx = clean.findIndex(a => a.id === data.row.id)
+          if (existIdx >= 0) return clean.map(a => a.id === data.row.id ? data.row : a)
+          return [...clean, data.row]
+        })
       }
-      // Replace optimistic row with real DB row
-      if (data.action === 'inserted') {
-        setAvailability(prev => [
-          ...prev.filter(a => a.id !== `__tmp__${key}`),
-          data.row,
-        ])
-      } else {
-        setAvailability(prev => prev.map(a =>
-          a.id === data.row.id ? data.row : a
-        ))
-      }
-    } finally {
-      setToggling(null)
+    } catch (e) { console.error('Availability persist failed:', e) }
+  }
+
+  // ── Drag-to-paint event handlers ──────────────────────────────────────────────
+  function handleCellPointerDown(e: React.PointerEvent, day: number, hour: number) {
+    e.preventDefault()
+    // Release capture so pointerenter fires on other cells (crucial for touch)
+    ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
+
+    snapshotRef.current  = [...avRef.current]   // snapshot state at drag start
+    paintModeRef.current = !snapIsAvailable(day, hour)  // flip from current state
+    isDraggingRef.current = true
+    visitedRef.current   = new Set([`${day}-${hour}`])
+    changedRef.current   = new Set([`${day}-${hour}`])
+    setSlotOptimistic(day, hour, paintModeRef.current)
+  }
+
+  function handleCellPointerEnter(day: number, hour: number) {
+    if (!isDraggingRef.current) return
+    const key = `${day}-${hour}`
+    if (visitedRef.current.has(key)) return
+    visitedRef.current.add(key)
+    // Only change cells that aren't already in the target state (using snapshot)
+    if (snapIsAvailable(day, hour) !== paintModeRef.current) {
+      changedRef.current.add(key)
+      setSlotOptimistic(day, hour, paintModeRef.current)
     }
   }
 
-  // ── Add blocked time ──────────────────────────────────────────────────────
+  async function handleDragEnd() {
+    if (!isDraggingRef.current) return
+    isDraggingRef.current = false
+    const cells = [...changedRef.current]
+    visitedRef.current = new Set()
+    changedRef.current = new Set()
+    // Batch-persist all changed cells in parallel
+    await Promise.all(cells.map(key => {
+      const [d, h] = key.split('-').map(Number)
+      return persistSlot(d, h)
+    }))
+  }
+
+  // ── Toggle whole day (click day header) ──────────────────────────────────────
+  async function toggleDay(day: number) {
+    const allOpen  = HOURS.every(h  => currentIsAvailable(day, h))
+    const target   = !allOpen
+    const toChange = HOURS.filter(h => currentIsAvailable(day, h) !== target)
+    toChange.forEach(h => setSlotOptimistic(day, h, target))
+    await Promise.all(toChange.map(h => persistSlot(day, h)))
+  }
+
+  // ── Toggle whole hour row (click hour label) ─────────────────────────────────
+  async function toggleHour(hour: number) {
+    const allOpen  = [0,1,2,3,4,5,6].every(d  => currentIsAvailable(d, hour))
+    const target   = !allOpen
+    const toChange = [0,1,2,3,4,5,6].filter(d => currentIsAvailable(d, hour) !== target)
+    toChange.forEach(d => setSlotOptimistic(d, hour, target))
+    await Promise.all(toChange.map(d => persistSlot(d, hour)))
+  }
+
+  // ── Add blocked time ──────────────────────────────────────────────────────────
   const addBlockedTime = async () => {
     setSavingBlock(true)
     try {
-      const res = await fetch('/api/availability', {
+      const res  = await fetch('/api/availability', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          date: newBlock.date,
-          startTime: newBlock.startTime,
-          endTime: newBlock.endTime,
-          reason: newBlock.reason,
-        }),
+        body: JSON.stringify({ date: newBlock.date, startTime: newBlock.startTime, endTime: newBlock.endTime, reason: newBlock.reason }),
       })
       const data = await res.json()
       if (!res.ok) { alert(data.error || 'Could not add blocked time'); return }
       setBlocked(prev => [...prev, data])
       setAddingBlock(false)
       setNewBlock({ date: '', startTime: '12:00', endTime: '13:00', reason: '' })
-    } finally {
-      setSavingBlock(false)
-    }
+    } finally { setSavingBlock(false) }
   }
 
-  // ── Remove blocked time ───────────────────────────────────────────────────
+  // ── Remove blocked time ───────────────────────────────────────────────────────
   const removeBlock = async (id: string) => {
     setRemovingBlock(id)
     try {
@@ -159,16 +207,14 @@ export default function AvailabilityPage() {
         const data = await res.json()
         alert(data.error || 'Could not remove blocked time')
       }
-    } finally {
-      setRemovingBlock(null)
-    }
+    } finally { setRemovingBlock(null) }
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-6 h-6 animate-spin text-teal" style={{ color: '#0d6e6e' }} />
+        <Loader2 className="w-6 h-6 animate-spin" style={{ color: '#0d6e6e' }} />
       </div>
     )
   }
@@ -178,7 +224,7 @@ export default function AvailabilityPage() {
       <div className="max-w-3xl space-y-3">
         <h1 className="font-serif text-2xl font-bold text-dark">Availability</h1>
         <p className="text-sm text-dark/60">
-          Availability scheduling isn’t required for this industry. Manage your booking windows from your services or booking page settings instead.
+          Availability scheduling isn't required for this industry. Manage your booking windows from your services or booking page settings instead.
         </p>
       </div>
     )
@@ -188,7 +234,9 @@ export default function AvailabilityPage() {
     <div className="space-y-6 max-w-5xl">
       <div>
         <h1 className="font-serif text-2xl font-bold text-dark">Availability</h1>
-        <p className="text-sm text-dark/50">Click any slot to toggle it on or off. Green = open for bookings.</p>
+        <p className="text-sm text-dark/50">
+          <strong>Click</strong> a slot to toggle it · <strong>Drag</strong> across slots to paint many at once · Click a <strong>day name</strong> or <strong>time</strong> to toggle the whole column / row.
+        </p>
       </div>
 
       {loadError && (
@@ -198,40 +246,65 @@ export default function AvailabilityPage() {
         </div>
       )}
 
-      {/* ── Weekly Grid ─────────────────────────────────────────────────── */}
+      {/* ── Weekly Grid ──────────────────────────────────────────────────────── */}
       <div className="bg-white rounded-2xl border border-border p-6 overflow-x-auto">
         <h3 className="font-semibold text-dark mb-4">Weekly Schedule</h3>
-        <div className="min-w-[640px]">
-          {/* Day headers */}
+
+        {/* touch-action:none prevents scroll during a paint gesture */}
+        <div
+          className="min-w-[640px] select-none"
+          style={{ touchAction: 'none' }}
+          onPointerUp={handleDragEnd}
+          onPointerLeave={handleDragEnd}
+        >
+          {/* ── Day headers (clickable to toggle whole day) ── */}
           <div className="grid grid-cols-8 gap-1 mb-2">
             <div />
-            {DAYS.map(d => (
-              <div key={d} className="text-center text-xs font-semibold text-dark/50">{d.slice(0, 3)}</div>
+            {DAYS.map((d, day) => (
+              <button
+                key={d}
+                onClick={() => toggleDay(day)}
+                title={`Toggle all ${d} slots`}
+                className="text-center text-xs font-semibold text-dark/50 hover:text-dark transition-colors py-1 rounded-lg hover:bg-slate-50"
+              >
+                {d.slice(0, 3)}
+              </button>
             ))}
           </div>
 
-          {/* Hour rows */}
+          {/* ── Hour rows ── */}
           {HOURS.map(hour => (
-            <div key={hour} className="grid grid-cols-8 gap-1 mb-1">
-              <div className="text-xs text-dark/40 text-right pr-2 pt-1">
-                {String(hour).padStart(2, '0')}:00
-              </div>
+            <div key={hour} className="grid grid-cols-8 gap-1 mb-1 items-center">
+
+              {/* Hour label — clickable to toggle that row across all days */}
+              <button
+                onClick={() => toggleHour(hour)}
+                title={`Toggle ${hStr(hour)} across all days`}
+                className="text-xs text-dark/40 text-right pr-2 hover:text-dark/70 transition-colors tabular-nums cursor-pointer"
+              >
+                {hStr(hour)}
+              </button>
+
+              {/* Cells for each day */}
               {[0, 1, 2, 3, 4, 5, 6].map(day => {
-                const avail = isAvailable(day, hour)
-                const key = `${day}-${hour}`
-                const isToggling = toggling === key
+                const open = isAvailable(day, hour)
                 return (
                   <button
                     key={day}
-                    onClick={() => toggleSlot(day, hour)}
-                    disabled={isToggling}
-                    title={`${DAYS[day]} ${String(hour).padStart(2, '0')}:00 — ${avail ? 'click to close' : 'click to open'}`}
-                    className={`h-7 rounded-md transition-all text-xs font-medium relative ${
-                      avail
-                        ? 'bg-teal/80 hover:bg-teal text-white'
-                        : 'bg-border/40 hover:bg-border text-dark/30'
-                    } ${isToggling ? 'opacity-60 cursor-wait' : 'cursor-pointer'}`}
-                    style={avail ? { backgroundColor: 'rgba(13,110,110,0.75)' } : undefined}
+                    data-day={day}
+                    data-hour={hour}
+                    onPointerDown={e => handleCellPointerDown(e, day, hour)}
+                    onPointerEnter={() => handleCellPointerEnter(day, hour)}
+                    title={`${DAYS[day]} ${hStr(hour)} — ${open ? 'open (click/drag to close)' : 'closed (click/drag to open)'}`}
+                    className={`h-8 rounded-lg transition-colors text-xs font-medium cursor-pointer ${
+                      open
+                        ? 'hover:opacity-80 active:opacity-60'
+                        : 'hover:opacity-70 active:opacity-50'
+                    }`}
+                    style={open
+                      ? { backgroundColor: 'rgba(13,110,110,0.78)' }
+                      : { backgroundColor: 'rgba(0,0,0,0.06)' }
+                    }
                   />
                 )
               })}
@@ -240,17 +313,20 @@ export default function AvailabilityPage() {
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-4 mt-4 text-xs text-dark/50">
+        <div className="flex flex-wrap items-center gap-5 mt-4 text-xs text-dark/50">
           <span className="flex items-center gap-1.5">
-            <span className="w-4 h-4 rounded inline-block" style={{ background: 'rgba(13,110,110,0.75)' }} /> Open
+            <span className="w-4 h-4 rounded inline-block" style={{ background: 'rgba(13,110,110,0.78)' }} />
+            Open
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-4 h-4 bg-border/40 rounded inline-block" /> Closed
+            <span className="w-4 h-4 rounded inline-block" style={{ background: 'rgba(0,0,0,0.06)' }} />
+            Closed
           </span>
+          <span className="text-dark/30">Tip: drag across multiple slots to paint them all at once</span>
         </div>
       </div>
 
-      {/* ── Blocked Times ────────────────────────────────────────────────── */}
+      {/* ── Blocked Times ─────────────────────────────────────────────────────── */}
       <div className="bg-white rounded-2xl border border-border p-6">
         <div className="flex items-center justify-between mb-4">
           <div>

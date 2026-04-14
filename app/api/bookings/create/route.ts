@@ -34,6 +34,9 @@ export async function POST(req: NextRequest) {
       depositAmount: depositAmount || undefined,
       bookingRef,
       cancellationPolicy: typedTenant.cancellation_policy || undefined,
+      paymentLink: typedTenant.payment_link || null,
+      paymentLinkLabel: typedTenant.payment_link_label || null,
+      paymentLinkNote: typedTenant.payment_link_note || null,
     }
 
     // Send confirmation to customer

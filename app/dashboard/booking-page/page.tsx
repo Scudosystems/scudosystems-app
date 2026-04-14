@@ -1063,13 +1063,25 @@ export default function BookingPageDashboard() {
                     </div>
                   </div>
 
-                  <div className="bg-[#f8f6f1] rounded-xl px-4 py-3 text-xs text-dark/60">
-                    {abLoading ? 'Loading stats…' : (
+                  <div className="bg-[#f8f6f1] rounded-xl px-4 py-3 text-xs text-dark/60 flex items-center justify-between gap-3 flex-wrap">
+                    {abLoading ? (
+                      <span>Loading stats…</span>
+                    ) : (
                       <span>
-                        Page A: {aBookings}/{aViews} bookings ({aRate.toFixed(1)}%) ·
-                        Page B: {bBookings}/{bViews} bookings ({bRate.toFixed(1)}%)
+                        Page A: <strong>{aBookings}/{aViews}</strong> bookings ({aRate.toFixed(1)}%)&nbsp;&nbsp;·&nbsp;&nbsp;
+                        Page B: <strong>{bBookings}/{bViews}</strong> bookings ({bRate.toFixed(1)}%)
                       </span>
                     )}
+                    <button
+                      onClick={async () => {
+                        if (!confirm('Reset A/B stats? This clears all view and booking counts for both variants so you can start a clean test.')) return
+                        await fetch('/api/booking-page/ab', { method: 'DELETE' })
+                        setAbStats({ A: { views: 0, bookings: 0 }, B: { views: 0, bookings: 0 } })
+                      }}
+                      className="text-xs text-dark/40 hover:text-red-500 transition-colors underline underline-offset-2 flex-shrink-0"
+                    >
+                      Reset stats
+                    </button>
                   </div>
                 </>
               )}
@@ -1201,6 +1213,25 @@ export default function BookingPageDashboard() {
             )}
           </div>
 
+          {/* Help installing */}
+          <div className="bg-teal/5 border border-teal/20 rounded-2xl p-5 flex items-start gap-4">
+            <div className="w-9 h-9 rounded-xl bg-teal/10 flex items-center justify-center flex-shrink-0">
+              <MessageCircle className="w-4 h-4 text-teal" />
+            </div>
+            <div>
+              <p className="font-semibold text-dark text-sm">Need help adding this to your website?</p>
+              <p className="text-xs text-dark/60 mt-0.5 leading-relaxed">
+                We can install your booking page for you — free of charge. Just send us a message and we'll get it live on your site.
+              </p>
+              <a
+                href="mailto:hello@scudosystems.com?subject=Please%20help%20install%20my%20booking%20page&body=Hi%2C%20I%20need%20help%20adding%20the%20booking%20page%20to%20my%20website."
+                className="inline-flex items-center gap-1.5 mt-3 text-xs font-semibold text-teal hover:underline"
+              >
+                <Mail className="w-3.5 h-3.5" /> Contact us for free installation help
+              </a>
+            </div>
+          </div>
+
           {/* QR Code */}
           <div className="bg-white rounded-2xl border border-border p-6">
             <div className="flex items-center gap-2 mb-3">
@@ -1304,7 +1335,7 @@ export default function BookingPageDashboard() {
               </button>
             </div>
             <p className="text-sm text-dark/50 mb-4">
-              Give patients a live queue link to check wait time, add concerns, and leave feedback.
+              Give {vertical?.customerLabel?.toLowerCase() || 'customers'} a live queue link to check wait time, add concerns, and leave feedback.
             </p>
 
             <div className="grid md:grid-cols-2 gap-4 mb-5">

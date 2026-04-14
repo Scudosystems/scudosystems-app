@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useState, useCallback, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -13,7 +15,7 @@ import type { OpeningHours, ServiceInput, TenantPreferences } from '@/types'
 import ReactConfetti from 'react-confetti'
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-const STEPS = ['Profile', 'Hours', 'Services', 'Branding', 'Preferences']
+const STANDARD_STEPS = ['Profile', 'Hours', 'Services', 'Branding', 'Preferences']
 const BRAND_COLOURS = ['#0d6e6e', '#c4893a', '#6d28d9', '#dc2626', '#059669', '#0369a1', '#b45309']
 const ADVANCE_OPTIONS = [
   { value: 0, label: 'No minimum' },
@@ -81,6 +83,18 @@ export default function OnboardingPage() {
     )
     return v.defaultServices.filter(s => !used.has(s.name.trim().toLowerCase()))
   }, [vertical, services])
+
+  const steps = STANDARD_STEPS
+  const isProfileStep = step === 1
+  const isHoursStep = step === 2
+  const isServicesStep = step === 3
+  const isBrandStep = step === 4
+  const isPreferencesStep = step === 5
+  const isFinalStep = step === steps.length
+  const standardVerticals = useMemo(
+    () => VERTICAL_LIST.map(v => ({ ...v, displayLabel: v.label })),
+    []
+  )
 
   const addSuggestedService = useCallback((service: ServiceInput) => {
     setServices(prev => {
@@ -157,7 +171,7 @@ export default function OnboardingPage() {
     setSaveError(null)
     if (step === 3 && services.length === 0) loadDefaultServices()
 
-    if (step < 5) {
+    if (step < steps.length) {
       setStep(s => s + 1)
       return
     }
@@ -197,6 +211,7 @@ export default function OnboardingPage() {
         hours,
         services,
         preferences: { ...prefs, allowSameDay, minimumAdvanceHours },
+        operatorConfig: null,
       }
 
       const { data: { session } } = await supabaseClient.auth.getSession()
@@ -343,7 +358,7 @@ export default function OnboardingPage() {
                 <Sparkles className="w-5 h-5 text-emerald-600" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-dark">Your 7-day free trial is live</p>
+                <p className="text-sm font-semibold text-dark">Your 14-day free trial is live</p>
                 <p className="text-xs text-dark/50">Monthly billing is managed from the Billing tab in your dashboard settings whenever you’re ready.</p>
               </div>
             </div>
@@ -365,7 +380,7 @@ export default function OnboardingPage() {
             <span className="font-serif text-lg font-bold text-dark">ScudoSystems Setup</span>
           </div>
           <div className="flex items-center gap-2">
-            {STEPS.map((s, i) => (
+            {steps.map((s, i) => (
               <div key={s} className="flex items-center gap-2 flex-1">
                 <div className={`flex items-center gap-2 ${i + 1 <= step ? 'text-teal' : 'text-dark/30'}`}>
                   <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all ${
@@ -377,7 +392,7 @@ export default function OnboardingPage() {
                   </div>
                   <span className="text-xs font-medium hidden sm:block">{s}</span>
                 </div>
-                {i < STEPS.length - 1 && (
+                {i < steps.length - 1 && (
                   <div className={`flex-1 h-px mx-1 ${i + 1 < step ? 'bg-teal' : 'bg-border'}`} />
                 )}
               </div>
@@ -396,7 +411,7 @@ export default function OnboardingPage() {
           </div>
         )}
         {/* ─── Step 1: Profile ─────────────────────────────────── */}
-        {step === 1 && (
+        {isProfileStep && (
           <div className="bg-white rounded-2xl p-8 border border-border">
             <h2 className="font-serif text-2xl font-bold text-dark mb-1">Your Business Profile</h2>
             <p className="text-dark/50 text-sm mb-8">This appears on your booking page and in customer emails.</p>
@@ -414,17 +429,17 @@ export default function OnboardingPage() {
               <div>
                 <label className="block text-sm font-medium text-dark mb-2">Industry *</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {VERTICAL_LIST.map(v => (
+                  {standardVerticals.map(v => (
                     <button
                       key={v.id}
                       type="button"
-                      onClick={() => setVertical(v.id)}
+                      onClick={() => setVertical(v.id as VerticalId)}
                       className={`flex items-center gap-2 p-3 rounded-xl border-2 text-left text-sm transition-all ${
                         vertical === v.id ? 'border-teal bg-teal/5 text-dark' : 'border-border hover:border-teal/30'
                       }`}
                     >
                       <span className="text-lg">{v.icon}</span>
-                      <span className="font-medium text-xs leading-tight">{v.label}</span>
+                      <span className="font-medium text-xs leading-tight">{v.displayLabel}</span>
                     </button>
                   ))}
                 </div>
@@ -492,7 +507,7 @@ export default function OnboardingPage() {
         )}
 
         {/* ─── Step 2: Hours ──────────────────────────────────── */}
-        {step === 2 && (
+        {isHoursStep && (
           <div className="bg-white rounded-2xl p-8 border border-border">
             <h2 className="font-serif text-2xl font-bold text-dark mb-1">Opening Hours</h2>
             <p className="text-dark/50 text-sm mb-8">Set when customers can book appointments.</p>
@@ -546,7 +561,7 @@ export default function OnboardingPage() {
         )}
 
         {/* ─── Step 3: Services ───────────────────────────────── */}
-        {step === 3 && (
+        {isServicesStep && (
           <div className="bg-white rounded-2xl p-8 border border-border">
             <div className="flex items-center justify-between mb-1">
               <h2 className="font-serif text-2xl font-bold text-dark">Services & Pricing</h2>
@@ -631,7 +646,7 @@ export default function OnboardingPage() {
         )}
 
         {/* ─── Step 4: Branding ───────────────────────────────── */}
-        {step === 4 && (
+        {isBrandStep && (
           <div className="grid sm:grid-cols-2 gap-6">
             <div className="bg-white rounded-2xl p-8 border border-border">
               <h2 className="font-serif text-2xl font-bold text-dark mb-1">Brand Colour</h2>
@@ -688,7 +703,7 @@ export default function OnboardingPage() {
         )}
 
         {/* ─── Step 5: Preferences ────────────────────────────── */}
-        {step === 5 && (
+        {isPreferencesStep && (
           <div className="bg-white rounded-2xl p-8 border border-border">
             <h2 className="font-serif text-2xl font-bold text-dark mb-1">Preferences & Automation</h2>
             <p className="text-dark/50 text-sm mb-8">Configure how ScudoSystems runs your booking system.</p>
@@ -757,8 +772,8 @@ export default function OnboardingPage() {
           </button>
           <button type="button" onClick={handleNext} disabled={saving || (step === 1 && (!businessName || !vertical))}
             className="flex items-center gap-2 btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
-            {saving ? 'Saving…' : step === 5 ? 'Save & Go Live 🚀' : 'Continue'}
-            {!saving && step < 5 && <ChevronRight className="w-4 h-4" />}
+            {saving ? 'Saving…' : isFinalStep ? 'Save & Go Live' : 'Continue'}
+            {!saving && step < steps.length && <ChevronRight className="w-4 h-4" />}
           </button>
         </div>
       </div>

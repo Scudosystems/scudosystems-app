@@ -168,6 +168,10 @@ export default function PublicBookingPage() {
   const [isIos, setIsIos] = useState(false)
   const [isStandalone, setIsStandalone] = useState(false)
   const [abVariant, setAbVariant] = useState<'A' | 'B'>('A')
+  // abAssigned becomes true only after the variant assignment effect has run.
+  // This prevents the view-tracking effect from firing with the wrong 'A' default
+  // before localStorage / random assignment has had a chance to set the real variant.
+  const [abAssigned, setAbAssigned] = useState(false)
   const [abTracked, setAbTracked] = useState(false)
 
   // Affiliate / dynamic pricing / event poster
@@ -385,16 +389,19 @@ export default function PublicBookingPage() {
     const abEnabled = tenant.booking_page_ab_enabled
     if (!abEnabled) {
       setAbVariant('A')
+      setAbAssigned(true)
       return
     }
     if (previewVariant) {
       setAbVariant(previewVariant)
+      setAbAssigned(true)
       return
     }
     const key = `scudo_ab_${tenant.slug}`
     const stored = typeof window !== 'undefined' ? window.localStorage.getItem(key) : null
     if (stored === 'A' || stored === 'B') {
       setAbVariant(stored)
+      setAbAssigned(true)
       return
     }
     const splitRaw = tenant.booking_page_ab_split ?? 50
@@ -404,19 +411,24 @@ export default function PublicBookingPage() {
       window.localStorage.setItem(key, pick)
     }
     setAbVariant(pick)
+    setAbAssigned(true)
   }, [tenant, previewVariant])
 
   useEffect(() => {
-    if (!tenant || abTracked === true) return
-    const abEnabled = tenant.booking_page_ab_enabled
-    const variant = abEnabled ? abVariant : 'A'
+    // Wait for variant assignment to complete before tracking — otherwise we'd
+    // always record the 'A' default before the real variant is known, making
+    // Variant B's view count permanently wrong.
+    if (!tenant || !abAssigned || abTracked === true) return
+    // Only track when A/B is actually running so we don't pollute stats with
+    // regular (non-test) traffic hitting variant A.
+    if (!tenant.booking_page_ab_enabled) return
     fetch('/api/booking-page/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slug: tenant.slug, variant, event: 'view' }),
+      body: JSON.stringify({ slug: tenant.slug, variant: abVariant, event: 'view' }),
     }).catch(() => null)
     setAbTracked(true)
-  }, [tenant, abVariant, abTracked])
+  }, [tenant, abVariant, abAssigned, abTracked])
 
   useEffect(() => {
     const ua = typeof window !== 'undefined' ? window.navigator.userAgent.toLowerCase() : ''
@@ -944,6 +956,23 @@ export default function PublicBookingPage() {
               </div>
             )}
           </div>
+          {tenant?.payment_link && (
+            <div className="mb-4 p-4 rounded-xl text-center"
+              style={{ background: hexToRgba(brandColour, 0.07), border: `1px solid ${hexToRgba(brandColour, 0.2)}` }}>
+              {tenant.payment_link_note && (
+                <p className="text-xs text-dark/60 mb-3">{tenant.payment_link_note}</p>
+              )}
+              <a
+                href={tenant.payment_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full py-3 rounded-xl font-semibold text-sm"
+                style={{ background: brandColour, color: '#fff' }}
+              >
+                {tenant.payment_link_label || 'Pay now →'}
+              </a>
+            </div>
+          )}
           <a href={`/book/${slug}`} className="block w-full py-3 rounded-xl font-semibold text-sm"
             style={primaryButtonStyle}>
             {vertical?.bookingPageLabel || 'Book Again'}

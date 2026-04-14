@@ -106,16 +106,34 @@ export default function StaffPage() {
     }
   }
 
-  const staffNamePlaceholder = vertical?.id === 'dental'
-    ? 'e.g. Dr Amelia Hart'
-    : vertical?.id === 'barber'
-      ? 'e.g. Jordan Blake'
-      : vertical?.id === 'nightclub'
-        ? 'e.g. Jade Collins'
-        : 'e.g. Emma Johnson'
-  const rolePlaceholder = vertical
-    ? `e.g. Senior ${vertical.staffLabel}`
-    : 'e.g. Senior Stylist'
+  // Industry-appropriate name placeholders — never show dental titles in other verticals
+  const staffNamePlaceholder = (() => {
+    switch (vertical?.id) {
+      case 'dental':      return 'e.g. Dr Amelia Hart'
+      case 'optician':    return 'e.g. Dr Sarah Mills'
+      case 'physio':      return 'e.g. James Turner'
+      case 'vet':         return 'e.g. Dr Emily Clarke'
+      case 'barber':      return 'e.g. Jordan Blake'
+      case 'nightclub':   return 'e.g. Jade Collins'
+      case 'supercar':    return 'e.g. Marcus Reid'
+      case 'auto':        return 'e.g. Lee Davies'
+      case 'restaurant':  return 'e.g. Sophie Grant'
+      case 'solicitor':   return 'e.g. James Hartley'
+      case 'accountant':  return 'e.g. Claire Weston'
+      case 'driving':     return 'e.g. David Walsh'
+      default:            return 'e.g. Emma Johnson'
+    }
+  })()
+  const rolePlaceholder = (() => {
+    if (!vertical) return 'e.g. Senior Stylist'
+    switch (vertical.id) {
+      case 'supercar':   return 'e.g. Senior Rental Agent'
+      case 'dental':     return 'e.g. Senior Dentist'
+      case 'nightclub':  return 'e.g. VIP Host'
+      case 'restaurant': return 'e.g. Head Host'
+      default:           return `e.g. Senior ${vertical.staffLabel}`
+    }
+  })()
 
   return (
     <div className="space-y-6 max-w-3xl">

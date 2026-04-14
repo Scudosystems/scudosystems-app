@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { Suspense, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -130,7 +132,7 @@ function SignInPageContent() {
         <div className="relative z-10">
           <h2 className="font-serif text-4xl text-white leading-snug mb-6">
             Welcome back.<br />
-            <span className="text-teal italic">Your diary awaits.</span>
+            <span className="text-teal italic">Your business awaits.</span>
           </h2>
           <div className="flex items-center gap-2 text-white/40 text-sm">
             <ShieldCheck className="w-4 h-4 text-teal" />

@@ -68,6 +68,7 @@ export type Database = {
           job_offers_enabled: boolean
           stripe_last_event_at: string | null
           stripe_last_event_type: string | null
+          operator_config: Json | null
           allow_same_day: boolean
           minimum_advance_hours: number
           auto_confirm: boolean
@@ -78,6 +79,9 @@ export type Database = {
           new_booking_sms: boolean
           cancellation_policy: string | null
           staff_guidelines: string[] | null
+          payment_link: string | null
+          payment_link_label: string | null
+          payment_link_note: string | null
         }
         Insert: Omit<Database['public']['Tables']['tenants']['Row'], 'created_at'> & { created_at?: string }
         Update: Partial<Database['public']['Tables']['tenants']['Row']>

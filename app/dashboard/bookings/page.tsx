@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { fetchLatestTenant } from '@/lib/tenant'
@@ -22,14 +24,14 @@ const QUEUE_BADGES: Record<string, string> = {
   in_service: 'badge-yellow',
   completed: 'badge-green',
 }
+// Each entry: pastDays = how far back, futureDays = how far forward (null = unlimited)
 const DATE_RANGES = [
-  { value: 'today', label: 'Today', days: 0 },
-  { value: '7_days', label: 'Next 7 days', days: 7 },
-  { value: '14_days', label: 'Next 14 days', days: 14 },
-  { value: '30_days', label: 'Next 30 days', days: 30 },
-  { value: '90_days', label: 'Next 90 days', days: 90 },
-  { value: '1_year', label: 'Next 1 year', days: 365 },
-  { value: 'all_time', label: 'All time', days: null },
+  { value: 'today',       label: 'Today',          pastDays: 0,   futureDays: 0   },
+  { value: 'past_7',      label: 'Last 7 days',    pastDays: 7,   futureDays: 0   },
+  { value: 'past_30',     label: 'Last 30 days',   pastDays: 30,  futureDays: 0   },
+  { value: 'upcoming_7',  label: 'Next 7 days',    pastDays: 0,   futureDays: 7   },
+  { value: 'upcoming_30', label: 'Next 30 days',   pastDays: 0,   futureDays: 30  },
+  { value: 'all_time',    label: 'All time',        pastDays: null, futureDays: null },
 ]
 const STATUS_CONFIG: Record<string, { label: string; class: string }> = {
   pending:   { label: 'Pending',   class: 'badge-yellow' },
@@ -46,21 +48,31 @@ export default function BookingsPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
-  const [dateRange, setDateRange] = useState('30_days')
+  const [dateRange, setDateRange] = useState('all_time')
   const [view, setView] = useState<'list' | 'calendar'>('list')
   const [selectedMonth, setSelectedMonth] = useState(new Date())
 
   useEffect(() => {
     async function load() {
+      let t: Tenant | null = null
       try {
-        const t = await fetchLatestTenant(supabase, 'id, vertical')
+        t = await fetchLatestTenant(supabase, 'id, vertical')
         setTenant(t as Tenant | null)
       } catch {
         setTenant(null)
       }
+
+      if (!t?.id) {
+        setLoading(false)
+        return
+      }
+
+      // Scope to this tenant only — without .eq('tenant_id', t.id) every
+      // booking from every tenant in the database would load here.
       const { data } = await supabase
         .from('bookings')
         .select('*, services(name,duration_minutes), staff(name)')
+        .eq('tenant_id', t.id)
         .order('booking_date', { ascending: false })
         .order('booking_time')
         .limit(500)
@@ -85,16 +97,26 @@ export default function BookingsPage() {
   }
 
   const matchesDateRange = (b: Booking) => {
-    if (dateRange === 'all_time') return true
+    const range = DATE_RANGES.find(r => r.value === dateRange)
+    if (!range || (range.pastDays === null && range.futureDays === null)) return true
+
     const bookingDate = new Date(`${b.booking_date}T00:00:00`)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    const range = DATE_RANGES.find(r => r.value === dateRange)
-    const days = range?.days ?? 0
+
+    const start = new Date(today)
+    if (range.pastDays !== null) start.setDate(start.getDate() - range.pastDays)
+    else start.setFullYear(2000) // effectively "no lower bound"
+
     const end = new Date(today)
-    end.setDate(end.getDate() + days)
-    end.setHours(23, 59, 59, 999)
-    return bookingDate >= today && bookingDate <= end
+    if (range.futureDays !== null) {
+      end.setDate(end.getDate() + range.futureDays)
+      end.setHours(23, 59, 59, 999)
+    } else {
+      end.setFullYear(2100) // effectively "no upper bound"
+    }
+
+    return bookingDate >= start && bookingDate <= end
   }
 
   const filtered = bookings.filter(b => {
@@ -146,9 +168,9 @@ export default function BookingsPage() {
   const getFirstDayOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay()
 
   const calendarBookings = bookings.filter(b => {
-    const d = new Date(b.booking_date)
+    const d = new Date(`${b.booking_date}T00:00:00`)
     return d.getMonth() === selectedMonth.getMonth() && d.getFullYear() === selectedMonth.getFullYear()
-  }).filter(matchesDateRange)
+  })
 
   const getBookingsForDay = (day: number) => {
     const dateStr = `${selectedMonth.getFullYear()}-${String(selectedMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`

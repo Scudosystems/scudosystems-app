@@ -53,10 +53,15 @@ alter table tenants
   add column if not exists booking_page_live_buffer_minutes integer not null default 20,
   add column if not exists rental_min_days integer not null default 1,
   add column if not exists rental_requirements text,
+  add column if not exists operator_config jsonb,
   add column if not exists job_offers_enabled boolean not null default false,
   add column if not exists stripe_last_event_at timestamptz,
   add column if not exists stripe_last_event_type text,
-  add column if not exists staff_guidelines text[] not null default array[]::text[];
+  add column if not exists staff_guidelines text[] not null default array[]::text[],
+  -- Payment link (Settings > Integrations) — PayPal, SumUp, Square, etc.
+  add column if not exists payment_link text,
+  add column if not exists payment_link_label text,
+  add column if not exists payment_link_note text;
 
 -- ============================================================
 -- STORAGE BUCKETS (logos, avatars, posters, imports)

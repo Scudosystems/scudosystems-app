@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState, useEffect, Suspense } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
+import { fetchLatestTenant } from '@/lib/tenant'
 import { formatCurrency } from '@/lib/utils'
 import {
   TrendingUp, Calendar, Download, CreditCard,
@@ -25,9 +26,17 @@ function PaymentsInner() {
   const [period, setPeriod] = useState('this_month')
 
   useEffect(() => {
-    supabase.from('bookings').select('*, services(name)').eq('status', 'completed')
-      .order('booking_date', { ascending: false })
-      .then(({ data }) => setBookings((data as any[]) || []))
+    async function load() {
+      const tenant = await fetchLatestTenant(supabase, 'id').catch(() => null)
+      if (!tenant?.id) return
+      const { data } = await supabase.from('bookings')
+        .select('*, services(name)')
+        .eq('tenant_id', tenant.id)
+        .eq('status', 'completed')
+        .order('booking_date', { ascending: false })
+      setBookings((data as any[]) || [])
+    }
+    load()
   }, [])
 
   const filterByPeriod = (b: Booking) => {
@@ -74,9 +83,9 @@ function PaymentsInner() {
       </div>
 
       <div className="bg-white rounded-2xl border border-border px-5 py-4">
-        <p className="font-semibold text-dark text-sm">Monthly subscription only</p>
+        <p className="font-semibold text-dark text-sm">Platform subscription</p>
         <p className="text-xs text-dark/50 mt-1 leading-relaxed">
-          Your ScudoSystems account is billed monthly, and you can manage billing at any time from dashboard settings.
+          Your ScudoSystems plan is billed monthly. Manage your subscription at any time from Settings → Billing.
         </p>
       </div>
 

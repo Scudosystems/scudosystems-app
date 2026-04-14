@@ -27,6 +27,9 @@ export interface BookingEmailData {
   depositAmount?: string
   bookingRef: string
   cancellationPolicy?: string
+  paymentLink?: string | null
+  paymentLinkLabel?: string | null
+  paymentLinkNote?: string | null
 }
 
 // ─── Welcome Email ────────────────────────────────────────────────────────────
@@ -103,6 +106,15 @@ export async function sendBookingConfirmation(data: BookingEmailData) {
               </table>
             </div>
             <p style="color:#9a9490;font-size:13px;margin:0 0 8px">Booking Reference: <strong style="color:#1a1814">${data.bookingRef}</strong></p>
+            ${data.paymentLink ? `
+            <div style="margin:24px 0;padding:20px;background:#f0fafa;border-radius:12px;text-align:center">
+              <p style="color:#1a1814;font-size:15px;font-weight:600;margin:0 0 12px">Payment</p>
+              ${data.paymentLinkNote ? `<p style="color:#4a4540;font-size:13px;margin:0 0 16px">${data.paymentLinkNote}</p>` : ''}
+              <a href="${data.paymentLink}" style="display:inline-block;background:#0d6e6e;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px">
+                ${data.paymentLinkLabel || 'Pay now →'}
+              </a>
+            </div>
+            ` : ''}
             ${data.cancellationPolicy ? `<p style="color:#9a9490;font-size:13px;margin:24px 0 0;padding:16px;background:#fef9f0;border-radius:8px;border-left:3px solid #c4893a">${data.cancellationPolicy}</p>` : ''}
           </div>
           <div style="padding:24px 40px;background:#f8f6f1;text-align:center">

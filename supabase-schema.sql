@@ -74,6 +74,7 @@ create table tenants (
   booking_page_live_buffer_minutes integer not null default 20,
   rental_min_days integer not null default 1,
   rental_requirements text,
+  operator_config       jsonb,
   job_offers_enabled boolean not null default false,
   stripe_last_event_at timestamptz,
   stripe_last_event_type text,
@@ -87,6 +88,10 @@ create table tenants (
   new_booking_sms       boolean not null default false,
   cancellation_policy   text,
   staff_guidelines      text[] not null default array[]::text[],
+  -- Payment link shown on booking confirmation + email (PayPal, SumUp, Square, etc.)
+  payment_link          text,
+  payment_link_label    text,
+  payment_link_note     text,
   created_at            timestamptz not null default now()
 );
 

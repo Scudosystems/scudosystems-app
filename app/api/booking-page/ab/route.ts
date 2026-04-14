@@ -40,3 +40,26 @@ export async function GET() {
 
   return NextResponse.json(response)
 }
+
+// Reset A/B stats so a fresh test can begin
+export async function DELETE() {
+  const user = await getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
+
+  const supabase = createSupabaseAdminClient()
+  const { data: tenant } = await supabase
+    .from('tenants')
+    .select('id')
+    .eq('user_id', user.id)
+    .single()
+  const typedTenant = tenant as TenantIdRow | null
+  if (!typedTenant) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 })
+
+  const { error } = await supabase
+    .from('booking_page_ab_stats')
+    .delete()
+    .eq('tenant_id', typedTenant.id)
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  return NextResponse.json({ success: true })
+}

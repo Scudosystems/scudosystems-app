@@ -12,8 +12,8 @@ import {
 import {
   Calendar, CalendarClock, Users, TrendingUp, TrendingDown, Zap, Star,
   ArrowRight, Loader2, Banknote, QrCode, Printer,
-  AlertCircle, BarChart2, Target, Repeat2, Timer,
-  X, Activity, Trophy, Clock, CreditCard, Upload,
+  AlertCircle, AlertTriangle, BarChart2, Target, Repeat2, Timer,
+  X, Activity, Trophy, Clock, CreditCard, Upload, Bell,
 } from 'lucide-react'
 import type { Booking, Tenant } from '@/types/database'
 import { VERTICALS } from '@/lib/verticals'
@@ -370,33 +370,83 @@ export default function DashboardOverview() {
   const [importFile, setImportFile] = useState<File | null>(null)
   const [importUploading, setImportUploading] = useState(false)
   const [importStatus, setImportStatus] = useState<string | null>(null)
+  const [newBookingAlert, setNewBookingAlert] = useState<{ name: string; time?: string } | null>(null)
   const supabase = createSupabaseBrowserClient()
-  const today = new Date().toISOString().split('T')[0]
+
+  // Use local date (not UTC) so UK/BST tenants see today's bookings correctly
+  const _now = new Date()
+  const today = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`
 
   useEffect(() => {
+    let cancelled = false
     async function load() {
-      const [{ data: b }, { data: s }] = await Promise.all([
-        supabase.from('bookings').select('*, services(name), staff(name)')
-          .gte('booking_date', (() => { const d = new Date(); d.setDate(d.getDate() - 90); return d.toISOString().split('T')[0] })())
-          .order('booking_date', { ascending: false }).limit(500),
-        supabase.from('staff').select('id, name').eq('is_active', true),
-      ])
+      // ── 1. Fetch the tenant first so every subsequent query is scoped to
+      //       this tenant's ID.  Without this, bookings / staff / reviews would
+      //       return rows from every tenant in the database (cross-contamination).
       let t: Tenant | null = null
       try {
         t = await fetchLatestTenant(supabase, '*') as Tenant | null
       } catch {
         t = null
       }
-      const { data: r } = await supabase
-        .from('reviews')
-        .select('id, rating, timing_rating, service_rating, cleanliness_rating, comment, created_at, display_name, booking_ref')
-        .order('created_at', { ascending: false })
-        .limit(6)
-      setTenant(t); setBookings((b as Booking[]) || []); setStaffList(s || []); setLoading(false)
+      if (cancelled) return
+      setTenant(t)
+
+      if (!t?.id) {
+        setLoading(false)
+        return
+      }
+
+      // ── 2. All queries now scoped to this tenant only ──────────────────────
+      const since90 = (() => { const d = new Date(); d.setDate(d.getDate() - 90); return d.toISOString().split('T')[0] })()
+      const [{ data: b }, { data: s }, { data: r }] = await Promise.all([
+        supabase.from('bookings')
+          .select('*, services(name), staff(name)')
+          .eq('tenant_id', t.id)
+          .gte('booking_date', since90)
+          .order('booking_date', { ascending: false })
+          .limit(500),
+        supabase.from('staff')
+          .select('id, name')
+          .eq('tenant_id', t.id)
+          .eq('is_active', true),
+        supabase.from('reviews')
+          .select('id, rating, timing_rating, service_rating, cleanliness_rating, comment, created_at, display_name, booking_ref')
+          .eq('tenant_id', t.id)
+          .order('created_at', { ascending: false })
+          .limit(6),
+      ])
+
+      if (cancelled) return
+      setBookings((b as Booking[]) || [])
+      setStaffList(s || [])
       setReviews(r || [])
+      setLoading(false)
+
     }
     load()
+    return () => { cancelled = true }
   }, [])
+
+  // ── Realtime: show toast when a new booking arrives ──────────────────────────
+  useEffect(() => {
+    if (!tenant?.id) return
+    const channel = supabase
+      .channel(`new-bookings-${tenant.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'bookings', filter: `tenant_id=eq.${tenant.id}` },
+        (payload) => {
+          const b = payload.new as any
+          setNewBookingAlert({ name: b.customer_name || 'A customer', time: b.booking_time?.slice(0, 5) })
+          setBookings(prev => [b, ...prev])
+          const timer = setTimeout(() => setNewBookingAlert(null), 7000)
+          return () => clearTimeout(timer)
+        },
+      )
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [tenant?.id])
 
   const vertical    = tenant?.vertical || null
   const meta        = vertical ? (INDUSTRY_META[vertical] || DEFAULT_META) : DEFAULT_META
@@ -441,7 +491,9 @@ export default function DashboardOverview() {
   const thisMonthAll   = bookings.filter(b => b.booking_date >= monthStart)
   const thisMonthDone  = thisMonthAll.filter(b => b.status === 'completed')
   const lastMonthDone  = bookings.filter(b => b.booking_date >= lastMonthStart && b.booking_date <= lastMonthEnd && b.status === 'completed')
-  const upcoming7      = bookings.filter(b => b.booking_date >= today && b.booking_date <= new Date(Date.now() + 7*86400000).toISOString().split('T')[0] && b.status !== 'cancelled')
+  const _in7 = new Date(_now); _in7.setDate(_now.getDate() + 7)
+  const in7Str = `${_in7.getFullYear()}-${String(_in7.getMonth() + 1).padStart(2, '0')}-${String(_in7.getDate()).padStart(2, '0')}`
+  const upcoming7      = bookings.filter(b => b.booking_date >= today && b.booking_date <= in7Str && b.status !== 'cancelled')
   const noShowsThis    = thisMonthAll.filter(b => b.status === 'no_show')
   const cancelledThis  = thisMonthAll.filter(b => b.status === 'cancelled')
   const confirmedAll   = bookings.filter(b => b.status === 'confirmed')
@@ -456,7 +508,9 @@ export default function DashboardOverview() {
   const cancellationRate = thisMonthAll.length ? pct(cancelledThis.length, thisMonthAll.length) : 0
   const completionRate   = thisMonthAll.length ? pct(thisMonthDone.length, thisMonthAll.length) : 0
 
-  const uniqueCustomers = new Set(completedAll.map(b => b.customer_email)).size
+  // Count unique clients from ALL non-cancelled bookings so new tenants see real numbers
+  const activeBookings  = bookings.filter(b => b.status !== 'cancelled')
+  const uniqueCustomers = new Set(activeBookings.map(b => b.customer_email)).size
   const repeatEmails    = completedAll.reduce((acc, b) => { acc[b.customer_email] = (acc[b.customer_email] || 0) + 1; return acc }, {} as Record<string, number>)
   const returningCount  = Object.values(repeatEmails).filter(c => c > 1).length
   const returnRate      = uniqueCustomers > 0 ? pct(returningCount, uniqueCustomers) : 0
@@ -499,7 +553,7 @@ export default function DashboardOverview() {
   const STATS_GRID = [
     { icon: Calendar,      label: `${meta.primaryUnit} Today`,   value: loading ? '—' : todayBookings.length,               sub: `${todayBookings.filter(b=>b.status==='confirmed').length} confirmed`,   accent: '#3b82f6', delta: null },
     { icon: Banknote,      label: 'Revenue This Month',          value: loading ? '—' : formatCurrency(revThisMonth),       sub: 'Completed sessions',                                                    accent: '#10b981', delta: revDelta !== 0 ? `${Math.abs(revDelta)}%` : null, deltaUp: revDelta >= 0 },
-    { icon: Users,         label: `Unique ${meta.clientLabel}s`, value: loading ? '—' : uniqueCustomers,                    sub: 'Last 90 days',                                                          accent: '#8b5cf6', delta: null },
+    { icon: Users,         label: `Unique ${meta.clientLabel}s`, value: loading ? '—' : uniqueCustomers,                    sub: 'All non-cancelled bookings',                                            accent: '#8b5cf6', delta: null },
     { icon: CalendarClock, label: 'Upcoming 7 Days',             value: loading ? '—' : upcoming7.length,                   sub: `${upcoming7.filter(b=>b.status==='confirmed').length} confirmed`,       accent: '#06b6d4', delta: null },
     { icon: TrendingUp,    label: 'Avg Booking Value',           value: loading ? '—' : formatCurrency(avgBookingValue),    sub: 'Per completed session',                                                 accent: '#f59e0b', delta: null },
     { icon: Repeat2,       label: 'Return Rate',                 value: loading ? '—' : `${returnRate}%`,                  sub: 'Clients who re-booked',                                                 accent: '#10b981', delta: null },
@@ -522,6 +576,27 @@ export default function DashboardOverview() {
 
   return (
     <div className="space-y-6 max-w-7xl">
+
+      {/* ── New-booking notification toast ── */}
+      {newBookingAlert && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-2xl px-5 py-4 shadow-2xl animate-in slide-in-from-bottom-4 duration-300"
+          style={{ background: '#0f172a', border: '1px solid #1e293b', color: '#fff', minWidth: 280, maxWidth: 360 }}>
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: '#10b98118', border: '1px solid #10b98130' }}>
+            <Bell className="w-4 h-4" style={{ color: '#10b981' }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-white">New booking received!</p>
+            <p className="text-xs mt-0.5 truncate" style={{ color: '#94a3b8' }}>
+              {newBookingAlert.name}{newBookingAlert.time ? ` · ${newBookingAlert.time}` : ''}
+            </p>
+          </div>
+          <button onClick={() => setNewBookingAlert(null)}
+            className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors">
+            <X className="w-3.5 h-3.5 text-slate-400" />
+          </button>
+        </div>
+      )}
 
       {showQR && tenant && (
         <QRPosterModal bookingUrl={bookingUrl} businessName={tenant.business_name} offerText={tenant.booking_poster_offer || ''} vertical={vertical} onClose={() => setShowQR(false)} />

@@ -131,18 +131,24 @@ export default function PartnersPage() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const [{ data: aff, error: affErr }, { data: com, error: comErr }] = await Promise.all([
-        supabase.from('affiliates').select('*').order('created_at', { ascending: false }),
-        supabase.from('affiliate_commissions')
-          .select('*, affiliates(name,code), bookings(customer_name,booking_date,total_amount_pence)')
-          .order('created_at', { ascending: false }).limit(100),
-      ])
+      // Fetch tenant FIRST so all subsequent queries are scoped to this tenant
       let t: any = null
       try {
         t = await fetchLatestTenant(supabase, '*')
       } catch {
         t = null
       }
+      if (!t?.id) {
+        setLoading(false)
+        return
+      }
+      const [{ data: aff, error: affErr }, { data: com, error: comErr }] = await Promise.all([
+        supabase.from('affiliates').select('*').eq('tenant_id', t.id).order('created_at', { ascending: false }),
+        supabase.from('affiliate_commissions')
+          .select('*, affiliates(name,code), bookings(customer_name,booking_date,total_amount_pence)')
+          .eq('tenant_id', t.id)
+          .order('created_at', { ascending: false }).limit(100),
+      ])
       const schemaError = affErr || comErr
       if (schemaError) {
         const message = (schemaError as any).message || 'Affiliate tables missing.'
