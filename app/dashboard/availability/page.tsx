@@ -151,7 +151,7 @@ export default function AvailabilityPage() {
   async function handleDragEnd() {
     if (!isDraggingRef.current) return
     isDraggingRef.current = false
-    const cells = [...changedRef.current]
+    const cells = Array.from(changedRef.current)
     visitedRef.current = new Set()
     changedRef.current = new Set()
     // Batch-persist all changed cells in parallel
