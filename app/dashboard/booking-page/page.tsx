@@ -192,9 +192,9 @@ export default function BookingPageDashboard() {
   // This means the embed code always shows the correct public URL even in dev.
   const appOrigin = useMemo(() => {
     const envUrl = process.env.NEXT_PUBLIC_APP_URL
-    if (envUrl && !envUrl.includes('localhost')) return envUrl
-    // On localhost use the actual origin; everywhere else always use production
-    // so QR codes never point to Vercel preview URLs (which require SSO login)
+    // Reject env URLs that point to Vercel preview domains — they require SSO login
+    // and should never appear in booking links, QR codes, or embed code.
+    if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('vercel.app')) return envUrl
     if (typeof window !== 'undefined' && window.location.hostname === 'localhost') return window.location.origin
     return 'https://www.scudosystems.com'
   }, [])
@@ -365,9 +365,7 @@ export default function BookingPageDashboard() {
         return
       }
       setWaitQrError('')
-      const fallbackUrl = typeof window !== 'undefined' && tenant?.slug
-        ? `${window.location.origin}/wait/${tenant.slug}`
-        : ''
+      const fallbackUrl = tenant?.slug ? `${appOrigin}/wait/${tenant.slug}` : ''
       const urlToEncode = waitUrl || fallbackUrl
       if (!urlToEncode) {
         setWaitQrDataUrl(null)
