@@ -8,10 +8,15 @@ import type { Database } from '@/types/database'
 type TenantSeedRow = Pick<Database['public']['Tables']['tenants']['Row'], 'id' | 'slug' | 'vertical'>
 type ServiceSeedRow = Pick<Database['public']['Tables']['services']['Row'], 'id' | 'price_pence' | 'deposit_pence' | 'requires_deposit'>
 
-const DEMO_ENABLED = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
-const DEMO_EMAIL = process.env.DEMO_EMAIL || 'demo@scudosystem.local'
+// Demo is always enabled — no env-var gate needed
 const DEMO_PASSWORD = process.env.DEMO_PASSWORD || 'DemoPass123!'
 const DEFAULT_DEMO_VERTICAL = 'dental' as const
+
+// Each vertical gets its own isolated demo user so all booking page URLs
+// stay permanently valid regardless of which vertical was seeded last.
+function getDemoEmail(vertical: string) {
+  return `demo+${vertical}@scudosystem.local`
+}
 
 const DEMO_NAMES: Record<string, { businessName: string; staff: { name: string; role: string }[] }> = {
   dental: {
@@ -109,18 +114,15 @@ function getDemoDefaults(vertical: keyof typeof VERTICALS) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!DEMO_ENABLED) {
-    return NextResponse.json({ error: 'Demo mode not available' }, { status: 403 })
-  }
-
   const body = await req.json().catch(() => ({}))
   const requestedVertical = typeof body?.vertical === 'string' ? body.vertical : DEFAULT_DEMO_VERTICAL
   const vertical = (requestedVertical in VERTICALS ? requestedVertical : DEFAULT_DEMO_VERTICAL) as keyof typeof VERTICALS
   const demoDefaults = getDemoDefaults(vertical)
+  const DEMO_EMAIL = getDemoEmail(vertical)
 
   const supabase = createSupabaseAdminClient()
 
-  // Ensure demo user exists
+  // Ensure a demo user exists for this specific vertical
   const { data: userList, error: listError } = await supabase.auth.admin.listUsers({ page: 1, perPage: 200 })
   if (listError) {
     return NextResponse.json({ error: listError.message }, { status: 500 })
@@ -140,11 +142,12 @@ export async function POST(req: NextRequest) {
     user = created.user
   }
 
-  // Ensure demo tenant exists
+  // Ensure demo tenant exists for this vertical (scoped to this vertical's user)
   const { data: existingTenant } = await supabase
     .from('tenants')
     .select('id, slug, vertical')
     .eq('user_id', user.id)
+    .eq('vertical', vertical)
     .maybeSingle()
   const typedExistingTenant = existingTenant as TenantSeedRow | null
 
@@ -185,10 +188,9 @@ export async function POST(req: NextRequest) {
     }
     tenantId = tenant.id
   } else {
-    // Update existing demo tenant to requested vertical
+    // Refresh tenant settings (vertical never changes — it's scoped to this user+vertical pair)
     await (supabase.from('tenants') as any).update({
       business_name: businessName,
-      vertical,
       slug: demoSlug,
       brand_colour: brandingColour,
       plan: 'professional',
@@ -198,17 +200,6 @@ export async function POST(req: NextRequest) {
       allow_same_day: true,
       booking_page_show_live_availability: true,
     }).eq('id', tenantId)
-
-    if (typedExistingTenant?.vertical !== vertical) {
-      await supabase.from('bookings').delete().eq('tenant_id', tenantId)
-      await supabase.from('services').delete().eq('tenant_id', tenantId)
-      await supabase.from('staff').delete().eq('tenant_id', tenantId)
-      await supabase.from('availability').delete().eq('tenant_id', tenantId)
-      // Reset guidelines to match the new vertical — prevents cross-industry contamination
-      await (supabase.from('tenants') as any).update({
-        staff_guidelines: getRecommendedGuidelines(vertical),
-      }).eq('id', tenantId)
-    }
   }
 
   if (!tenantId) {
