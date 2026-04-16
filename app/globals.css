@@ -114,19 +114,53 @@
 .dashboard-shell.dashboard-dark .border-border { border-color: var(--dash-border) !important; }
 .dashboard-shell.dashboard-dark .border-slate-200 { border-color: var(--dash-border) !important; }
 .dashboard-shell.dashboard-dark .text-dark { color: var(--dash-text) !important; }
+.dashboard-shell.dashboard-dark [class~="text-dark/80"] { color: rgba(226, 232, 240, 0.85) !important; }
+.dashboard-shell.dashboard-dark [class~="text-dark/70"] { color: rgba(226, 232, 240, 0.75) !important; }
 .dashboard-shell.dashboard-dark [class~="text-dark/60"] { color: rgba(226, 232, 240, 0.65) !important; }
 .dashboard-shell.dashboard-dark [class~="text-dark/50"] { color: rgba(226, 232, 240, 0.6) !important; }
 .dashboard-shell.dashboard-dark [class~="text-dark/40"] { color: rgba(226, 232, 240, 0.5) !important; }
 .dashboard-shell.dashboard-dark [class~="text-dark/30"] { color: rgba(226, 232, 240, 0.4) !important; }
+/* gray-900/800/700 — near-black in light mode, must flip to near-white in dark */
+.dashboard-shell.dashboard-dark .text-gray-900 { color: #f1f5f9 !important; }
+.dashboard-shell.dashboard-dark .text-gray-800 { color: #e2e8f0 !important; }
+.dashboard-shell.dashboard-dark .text-gray-700 { color: #cbd5e1 !important; }
+.dashboard-shell.dashboard-dark .text-gray-500 { color: #94a3b8 !important; }
+.dashboard-shell.dashboard-dark .text-gray-400 { color: #94a3b8 !important; }
+.dashboard-shell.dashboard-dark .text-gray-600 { color: #cbd5e1 !important; }
+.dashboard-shell.dashboard-dark .text-gray-300 { color: #64748b !important; }
+/* slate equivalents */
+.dashboard-shell.dashboard-dark .text-slate-900 { color: #f1f5f9 !important; }
+.dashboard-shell.dashboard-dark .text-slate-800 { color: #e2e8f0 !important; }
+.dashboard-shell.dashboard-dark .text-slate-700 { color: #cbd5e1 !important; }
+.dashboard-shell.dashboard-dark .text-slate-600 { color: #cbd5e1 !important; }
 .dashboard-shell.dashboard-dark .text-slate-500 { color: #94a3b8 !important; }
-.dashboard-shell.dashboard-dark .text-slate-600 { color: #cbd5f5 !important; }
 .dashboard-shell.dashboard-dark .text-slate-400 { color: #94a3b8 !important; }
 .dashboard-shell.dashboard-dark .text-slate-300 { color: #64748b !important; }
-.dashboard-shell.dashboard-dark .text-gray-400 { color: #94a3b8 !important; }
-.dashboard-shell.dashboard-dark .text-gray-600 { color: #cbd5f5 !important; }
+/* inputs, textareas, selects */
+.dashboard-shell.dashboard-dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.dashboard-shell.dashboard-dark textarea,
+.dashboard-shell.dashboard-dark select {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+.dashboard-shell.dashboard-dark input::placeholder,
+.dashboard-shell.dashboard-dark textarea::placeholder { color: #64748b !important; }
+/* table text */
+.dashboard-shell.dashboard-dark th { color: #94a3b8 !important; }
+.dashboard-shell.dashboard-dark td { color: #cbd5e1 !important; }
+/* hover states */
 .dashboard-shell.dashboard-dark .hover\:bg-slate-100:hover { background-color: #1e293b !important; }
 .dashboard-shell.dashboard-dark .hover\:bg-slate-200:hover { background-color: #243047 !important; }
 .dashboard-shell.dashboard-dark .hover\:text-slate-900:hover { color: #f8fafc !important; }
+.dashboard-shell.dashboard-dark .hover\:text-gray-900:hover { color: #f8fafc !important; }
+/* extra backgrounds that appear in cards/badges */
+.dashboard-shell.dashboard-dark .bg-slate-50 { background-color: #0f172a !important; }
+.dashboard-shell.dashboard-dark .bg-gray-50 { background-color: #0f172a !important; }
+.dashboard-shell.dashboard-dark .bg-gray-100 { background-color: #1e293b !important; }
+.dashboard-shell.dashboard-dark .bg-gray-200 { background-color: #243047 !important; }
+.dashboard-shell.dashboard-dark .border-gray-200 { border-color: var(--dash-border) !important; }
+.dashboard-shell.dashboard-dark .border-gray-100 { border-color: #1e293b !important; }
 
 /* ─── Scrollbar ─────────────────────────────────────────────────── */
 ::-webkit-scrollbar       { width: 6px; height: 6px; }
