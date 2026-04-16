@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { fetchLatestTenant } from '@/lib/tenant'
 import { getRecommendedGuidelines, detectGuidelineVertical } from '@/lib/industry-defaults'
@@ -90,6 +91,7 @@ const defaultPerms = {
 
 export default function StaffAccessPage() {
   const supabase = createSupabaseBrowserClient()
+  const router = useRouter()
 
   const [tenantId, setTenantId] = useState<string | null>(null)
   const [tenantSlug, setTenantSlug] = useState<string>('')
@@ -140,13 +142,13 @@ export default function StaffAccessPage() {
       try {
         t = await fetchLatestTenant(supabase, 'id, slug, vertical, staff_guidelines, job_offers_enabled')
       } catch (err: any) {
-        setLoadError(err?.message || 'Tenant not loaded. Please ensure required columns exist.')
+        setLoadError(err?.message || 'Could not load your business data. Please try refreshing the page.')
         setLoading(false)
         return
       }
       if (!t) {
-        setLoadError('Tenant not loaded. Please ensure required columns exist.')
-        setLoading(false)
+        // No tenant yet — send them to complete onboarding
+        router.push('/onboarding')
         return
       }
       setTenantId(t.id)

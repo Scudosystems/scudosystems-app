@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <title>ScudoQR | Car Wash Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/scudoqr-demo/assets/theme.css">
+  <link rel="stylesheet" href="/scudoqr-demo/assets/dashboard.css">
+</head>
+<body class="dashboard-page">
+  <div class="page-noise"></div>
+
+  <div class="login-screen hidden" id="loginScreen">
+    <div class="login-card surface-card">
+      <div class="brand-lockup">
+        <div class="brand-mark" data-brand-mark></div>
+        <div>
+          <div class="eyebrow">Secure dashboard</div>
+          <h2 data-brand="productName"></h2>
+        </div>
+      </div>
+      <p class="muted">Enter your operator PIN to access the car wash operations dashboard.</p>
+      <input id="pinInput" type="password" placeholder="PIN" maxlength="6">
+      <button class="primary-button" id="unlockDashboard" type="button">Unlock dashboard</button>
+      <div class="login-error" id="loginError"></div>
+    </div>
+  </div>
+
+  <main class="dashboard-shell">
+    <header class="dashboard-topbar surface-card">
+      <div class="brand-lockup">
+        <div class="brand-mark" data-brand-mark></div>
+        <div>
+          <div class="eyebrow" data-brand="productName"></div>
+          <h2 data-brand="dashboardTitle"></h2>
+          <p class="muted" id="heroSiteMeta"></p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="api-badge" id="apiBadge">
+          <span class="api-dot"></span>
+          <span id="apiBadgeText">Demo data</span>
+        </div>
+        <button class="ghost-button" id="refreshButton" type="button">Refresh</button>
+        <button class="ghost-button" id="logoutButton" type="button">Log out</button>
+      </div>
+    </header>
+
+    <section class="hero-grid">
+      <article class="hero-card surface-card">
+        <div class="eyebrow" data-brand="operatorName"></div>
+        <h1 data-brand="dashboardTitle"></h1>
+        <p class="hero-copy" data-brand="dashboardSubtitle"></p>
+        <div class="pill-row">
+          <span class="pill"><strong data-brand="siteName"></strong></span>
+          <span class="pill"><strong data-brand="siteId"></strong></span>
+          <span class="pill"><strong data-brand="siteRegion"></strong></span>
+          <span class="pill"><strong>Demo preview</strong></span>
+        </div>
+      </article>
+
+      <aside class="hero-side-card surface-card">
+        <div class="eyebrow">Portfolio snapshot</div>
+        <div class="network-grid" id="networkGrid"></div>
+      </aside>
+    </section>
+
+    <section class="toolbar surface-card" data-section="filters">
+      <div class="field">
+        <label for="filterBay">Bay</label>
+        <select id="filterBay">
+          <option value="">All bays</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="filterStart">Start date</label>
+        <input id="filterStart" type="date">
+      </div>
+      <div class="field">
+        <label for="filterEnd">End date</label>
+        <input id="filterEnd" type="date">
+      </div>
+      <div class="toolbar-actions">
+        <button class="primary-button" id="applyFilters" type="button">Apply</button>
+        <button class="ghost-button" id="clearFilters" type="button">Clear</button>
+        <button class="ghost-button" id="printDaily" type="button">Print daily</button>
+      </div>
+    </section>
+
+    <div class="hidden" id="dashboardError">
+      <article class="section-card surface-card">
+        <strong>Dashboard unavailable</strong>
+        <p class="muted" id="dashboardErrorText"></p>
+      </article>
+    </div>
+
+    <section class="kpi-grid" data-section="revenue">
+      <article class="kpi-card surface-card">
+        <small>Today</small>
+        <div class="metric-value" id="kpi-today">£0.00</div>
+        <span class="muted" id="kpi-today-sub">0 sessions</span>
+      </article>
+      <article class="kpi-card surface-card">
+        <small>This Week</small>
+        <div class="metric-value" id="kpi-week">£0.00</div>
+        <span class="muted" id="kpi-week-sub">0 sessions</span>
+      </article>
+      <article class="kpi-card surface-card">
+        <small>This Month</small>
+        <div class="metric-value" id="kpi-month">£0.00</div>
+        <span class="muted" id="kpi-month-sub">0 sessions</span>
+      </article>
+      <article class="kpi-card surface-card">
+        <small>All Time</small>
+        <div class="metric-value" id="kpi-all">£0.00</div>
+        <span class="muted" id="kpi-all-sub">0 sessions</span>
+      </article>
+    </section>
+
+    <section class="section-card surface-card" data-section="charts">
+      <div class="section-header">
+        <div>
+          <h2>Live bay status</h2>
+          <p>Quick operational visibility across all wash bays.</p>
+        </div>
+      </div>
+      <div class="status-chip-row" id="statusChipRow"></div>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="section-card surface-card span-8" data-section="charts">
+        <div class="section-header">
+          <div>
+            <h2>Last 7 Days</h2>
+            <p>Revenue trend from wash sessions over the last seven days.</p>
+          </div>
+        </div>
+        <div class="chart-bars" id="last7Bars"></div>
+        <div class="chart-labels" id="last7Labels"></div>
+      </article>
+
+      <article class="section-card surface-card span-4" data-section="charts">
+        <div class="section-header">
+          <div>
+            <h2>Bay Totals</h2>
+            <p>Highest-yield bays across the selected period.</p>
+          </div>
+        </div>
+        <div class="charger-list" id="chargerTotalsList"></div>
+      </article>
+
+      <article class="section-card surface-card span-12" data-section="chargerPerformance">
+        <div class="section-header">
+          <div>
+            <h2>Bay Performance</h2>
+            <p>Commercial performance, volume, and session quality by bay.</p>
+          </div>
+        </div>
+        <div class="performance-list" id="performanceList"></div>
+      </article>
+
+      <article class="section-card surface-card span-6" data-section="forecasts">
+        <div class="section-header">
+          <div>
+            <h2>Revenue Forecast</h2>
+            <p>Projected daily revenue based on recent network performance.</p>
+          </div>
+        </div>
+        <div class="forecast-list" id="forecastList"></div>
+      </article>
+
+      <article class="section-card surface-card span-6" data-section="forecasts">
+        <div class="section-header">
+          <div>
+            <h2>Wash Demand by Hour</h2>
+            <p>Hourly wash demand grouped into operating windows.</p>
+          </div>
+        </div>
+        <div class="mini-bars" id="demandBars"></div>
+        <div class="chart-labels" id="demandLabels"></div>
+      </article>
+
+      <article class="section-card surface-card span-7" data-section="heatmap">
+        <div class="section-header">
+          <div>
+            <h2>Peak Hours Heatmap</h2>
+            <p>Where demand clusters during the day.</p>
+          </div>
+        </div>
+        <div class="heatmap-grid" id="heatmapGrid"></div>
+      </article>
+
+      <article class="section-card surface-card span-5" data-section="heatmap">
+        <div class="section-header">
+          <div>
+            <h2>Peak Windows</h2>
+            <p>Top demand windows to inform pricing, staffing, or promotions.</p>
+          </div>
+        </div>
+        <div class="peak-pills" id="peakPills"></div>
+      </article>
+
+      <article class="section-card surface-card span-4" data-section="alerts">
+        <div class="section-header">
+          <div>
+            <h2>Alerts</h2>
+            <p>Failed starts and bays that may need attention.</p>
+          </div>
+        </div>
+        <div class="alert-list" id="alertList"></div>
+      </article>
+
+      <article class="section-card surface-card span-8" data-section="transactions">
+        <div class="section-header">
+          <div>
+            <h2>Recent Transactions</h2>
+            <p>Latest wash payments and session outcomes.</p>
+          </div>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Bay</th>
+              <th>Amount</th>
+              <th>Pay ID</th>
+              <th>Status</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="transactionsBody"></tbody>
+        </table>
+        <div class="section-actions">
+          <span class="muted">Export the current filtered view.</span>
+          <div class="button-row">
+            <button class="ghost-button" id="exportCsv" type="button">Export CSV</button>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="settings-grid">
+      <article class="section-card surface-card" data-section="forecasts">
+        <div class="section-header">
+          <div>
+            <h2>Promotional Controls</h2>
+            <p>Enable optional wash incentives on the payment flow.</p>
+          </div>
+        </div>
+        <div class="settings-stack">
+          <label class="toggle">
+            <input id="promotionEnabled" type="checkbox">
+            <span>Enable wash boost on the live payment page</span>
+          </label>
+          <div class="field">
+            <label for="promotionMode">Mode</label>
+            <select id="promotionMode">
+              <option value="manual">Manual pack</option>
+              <option value="recommended">Recommended pack</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="promotionDisplay">Display</label>
+            <select id="promotionDisplay">
+              <option value="selected">Selected pack only</option>
+              <option value="all">Show all packs</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Pack library</label>
+            <div class="button-row" id="promotionPackRow"></div>
+          </div>
+          <div class="field">
+            <label for="promotionChargers">Bay IDs</label>
+            <input id="promotionChargers" type="text" placeholder="260529,260530,260531">
+          </div>
+          <div class="setting-card">
+            <strong>Recommendation</strong>
+            <p class="muted" id="promotionRecommendation"></p>
+          </div>
+          <div class="button-row">
+            <button class="secondary-button" id="applyRecommendation" type="button">Apply recommendation</button>
+            <button class="primary-button" id="savePromotionSettings" type="button">Save promotion settings</button>
+          </div>
+          <div class="settings-note" id="promotionSaveStatus"></div>
+        </div>
+      </article>
+
+      <article class="section-card surface-card" id="adminArea">
+        <div class="section-header">
+          <div>
+            <h2>Staff Permissions</h2>
+            <p>Operator visibility controls for field teams and back-office users.</p>
+          </div>
+        </div>
+
+        <div class="settings-stack">
+          <div class="staff-option-list">
+            <label class="staff-option">
+              <input type="checkbox" data-staff-toggle="filters">
+              <span><strong>Filters</strong><span class="settings-note">Date and bay filtering plus print actions.</span></span>
+            </label>
+            <label class="staff-option">
+              <input type="checkbox" data-staff-toggle="revenue">
+              <span><strong>Revenue totals</strong><span class="settings-note">Headline revenue cards.</span></span>
+            </label>
+            <label class="staff-option">
+              <input type="checkbox" data-staff-toggle="charts">
+              <span><strong>Trend charts</strong><span class="settings-note">Status, last 7 days, and charger totals.</span></span>
+            </label>
+            <label class="staff-option">
+              <input type="checkbox" data-staff-toggle="chargerPerformance">
+              <span><strong>Charger performance</strong><span class="settings-note">Revenue, volume, and performance ranking.</span></span>
+            </label>
+            <label class="staff-option">
+              <input type="checkbox" data-staff-toggle="forecasts">
+              <span><strong>Forecasting</strong><span class="settings-note">Forecasts and demand windows.</span></span>
+            </label>
+            <label class="staff-option">
+              <input type="checkbox" data-staff-toggle="heatmap">
+              <span><strong>Heatmap</strong><span class="settings-note">Peak-hour intelligence.</span></span>
+            </label>
+            <label class="staff-option">
+              <input type="checkbox" data-staff-toggle="alerts">
+              <span><strong>Alerts</strong><span class="settings-note">Charging failures and idle charger notices.</span></span>
+            </label>
+            <label class="staff-option">
+              <input type="checkbox" data-staff-toggle="transactions">
+              <span><strong>Transactions</strong><span class="settings-note">Recent payments and CSV exports.</span></span>
+            </label>
+          </div>
+
+          <div class="field">
+            <label for="newUserName">Add user</label>
+            <input id="newUserName" type="text" placeholder="User name">
+          </div>
+          <div class="field">
+            <label for="newUserPin">User PIN</label>
+            <input id="newUserPin" type="text" placeholder="PIN">
+          </div>
+          <div class="field">
+            <label for="newUserRole">User role</label>
+            <select id="newUserRole">
+              <option value="staff">Staff</option>
+              <option value="owner">Owner</option>
+            </select>
+          </div>
+          <div class="button-row">
+            <button class="ghost-button" id="addUser" type="button">Add user</button>
+          </div>
+          <div class="user-list" id="userList"></div>
+
+          <div class="field">
+            <label for="adminPin">Admin PIN</label>
+            <input id="adminPin" type="text" placeholder="New dashboard PIN">
+          </div>
+          <div class="button-row">
+            <button class="ghost-button" id="saveAdminPin" type="button">Save admin PIN</button>
+            <button class="primary-button" id="saveStaffAccess" type="button">Save access settings</button>
+          </div>
+          <div class="settings-note" id="accessSaveStatus"></div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script>window.SCUDO_DEMO_MODE = true;</script>
+  <script src="/scudoqr-demo/assets/operator-config.js"></script>
+  <script src="/scudoqr-demo/assets/demo-data.js"></script>
+  <script src="/scudoqr-demo/assets/app-core.js"></script>
+  <script src="/scudoqr-demo/assets/dashboard-app.js"></script>
+</body>
+</html>
