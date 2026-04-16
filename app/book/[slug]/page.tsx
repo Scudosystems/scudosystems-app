@@ -515,7 +515,16 @@ export default function PublicBookingPage() {
       slots.push(...daySlots)
     }
 
-    const uniqueSlots = Array.from(new Set(slots)).filter(s => !takenTimes.has(s)).sort()
+    // For today, filter out slots that are already in the past
+    const isToday = dateStr === new Date().toLocaleDateString('en-CA')
+    const nowMins = isToday
+      ? (() => { const n = new Date(); return n.getHours() * 60 + n.getMinutes() })()
+      : 0
+
+    const uniqueSlots = Array.from(new Set(slots))
+      .filter(s => !takenTimes.has(s))
+      .filter(s => !isToday || toMinutes(s) >= nowMins)
+      .sort()
     setAvailableSlots(uniqueSlots)
   }
 
@@ -572,7 +581,7 @@ export default function PublicBookingPage() {
 
     const dayAvail = availability.filter(a => a.day_of_week === dayOfWeek)
     if (!dayAvail.length) {
-      setLiveAvailability({ time: null, withinWindow: false })
+      setLiveAvailability(null)
       return
     }
 
@@ -613,7 +622,8 @@ export default function PublicBookingPage() {
     }
 
     if (nextSlot === null) {
-      setLiveAvailability({ time: null, withinWindow: false })
+      // No future slots remain today — hide the banner rather than showing a negative message
+      setLiveAvailability(null)
       return
     }
 

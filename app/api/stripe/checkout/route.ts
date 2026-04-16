@@ -44,7 +44,7 @@ export async function POST() {
     priceId,
     successUrl: absoluteUrl('/dashboard/settings?billing=success'),
     cancelUrl: absoluteUrl('/dashboard/settings?billing=cancel'),
-    trialDays: 7,
+    trialDays: 14,
   })
 
   return NextResponse.json({ url: session.url })

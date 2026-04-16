@@ -1,21 +1,7 @@
 import type { Metadata } from 'next'
-import { Inter, Playfair_Display } from 'next/font/google'
+import '@fontsource-variable/inter'
+import '@fontsource-variable/playfair-display'
 import './globals.css'
-
-// ─── Fonts ────────────────────────────────────────────────────────────────────
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-sans',
-  display: 'swap',
-})
-
-const playfair = Playfair_Display({
-  subsets: ['latin'],
-  variable: '--font-serif',
-  display: 'swap',
-  style: ['normal', 'italic'],
-})
-
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 export const metadata: Metadata = {
   title: {
@@ -46,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en-GB" className={`${inter.variable} ${playfair.variable}`}>
+    <html lang="en-GB">
       <body className="min-h-screen bg-cream font-sans antialiased">
         {children}
       </body>

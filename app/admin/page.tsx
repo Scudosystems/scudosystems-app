@@ -1,243 +1,148 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { createSupabaseBrowserClient } from '@/lib/supabase'
-import { formatCurrency } from '@/lib/utils'
-import { VERTICAL_PRICING } from '@/lib/pricing'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
-import { Users, TrendingUp, UserPlus, UserMinus, Building2, ExternalLink, Search } from 'lucide-react'
-import type { Tenant } from '@/types/database'
+import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
+import { Loader2, ShieldCheck, AlertTriangle, PlugZap, QrCode, RadioTower, Save } from 'lucide-react'
+import type { OperatorConfig } from '@/lib/self-serve/types'
+import { INDUSTRY_BLUEPRINTS } from '@/lib/self-serve/blueprints'
 
-const VERTICAL_COLOURS: Record<string, string> = {
-  dental: '#0d6e6e', beauty: '#c4893a', nightclub: '#6d28d9', spa: '#059669',
-  gym: '#dc2626', optician: '#0369a1', vet: '#7c3aed', auto: '#b45309', tutoring: '#0891b2',
-  restaurant: '#ea580c', barber: '#1d4ed8', tattoo: '#1e1e1e', carwash: '#0284c7',
-  driving: '#16a34a', takeaway: '#d97706', supercar: '#7c3aed', photography: '#db2777',
-  grooming: '#a16207', physio: '#0891b2', nails: '#be185d', aesthetics: '#9333ea',
-  lash: '#831843', escape: '#1e3a8a', solicitor: '#374151', accountant: '#065f46',
-}
-
-export default function AdminPage() {
-  const supabase = createSupabaseBrowserClient()
-  const [tenants, setTenants] = useState<Tenant[]>([])
+export default function AdminSetupPage() {
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [config, setConfig] = useState<OperatorConfig | null>(null)
+  const [businessName, setBusinessName] = useState('')
 
   useEffect(() => {
-    loadData()
+    fetch('/api/operator-config')
+      .then(async res => {
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || 'Failed to load operator config')
+        setConfig(data.config)
+        setBusinessName(data.tenant?.business_name || '')
+      })
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false))
   }, [])
 
-  async function loadData() {
-    const { data } = await supabase.from('tenants').select('*').order('created_at', { ascending: false })
-    setTenants(data || [])
-    setLoading(false)
+  const blueprint = useMemo(() => (config ? INDUSTRY_BLUEPRINTS[config.industry] : null), [config])
+
+  const updateServicePoint = (index: number, patch: Partial<OperatorConfig['servicePoints'][number]>) => {
+    setConfig(current => current ? {
+      ...current,
+      servicePoints: current.servicePoints.map((point, i) => i === index ? { ...point, ...patch } : point),
+    } : current)
   }
 
-  const activeTenants = tenants.filter(t => t.plan_status === 'active' || t.plan_status === 'trialing')
-  const mrr = tenants
-    .filter(t => t.plan_status === 'active')
-    .reduce((sum, t) => sum + (VERTICAL_PRICING[t.vertical]?.basePence || 0), 0)
-  const arr = mrr * 12
-
-  const signupsThisWeek = tenants.filter(t => {
-    const d = new Date(t.created_at)
-    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 7)
-    return d >= cutoff
-  }).length
-
-  const churnThisMonth = tenants.filter(t => {
-    if (t.plan_status !== 'cancelled') return false
-    const d = new Date(t.created_at)
-    const now = new Date()
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
-  }).length
-
-  // MRR by vertical (donut chart data)
-  const mrrByVertical = Object.entries(VERTICAL_COLOURS).map(([v, colour]) => ({
-    name: v.charAt(0).toUpperCase() + v.slice(1),
-    value: tenants.filter(t => t.vertical === v && t.plan_status === 'active').length,
-    colour,
-  })).filter(d => d.value > 0)
-
-  // Signups per month (last 6)
-  const signupChart = Array.from({ length: 6 }, (_, i) => {
-    const d = new Date()
-    d.setMonth(d.getMonth() - (5 - i))
-    return {
-      month: d.toLocaleDateString('en-GB', { month: 'short' }),
-      signups: tenants.filter(t => {
-        const td = new Date(t.created_at)
-        return td.getMonth() === d.getMonth() && td.getFullYear() === d.getFullYear()
-      }).length,
+  const save = async () => {
+    if (!config) return
+    setSaving(true)
+    setError(null)
+    const res = await fetch('/api/operator-config', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      setError(data.error || 'Failed to save operator config')
+      setSaving(false)
+      return
     }
-  })
+    setConfig(data.config)
+    setSaving(false)
+  }
 
-  const filteredTenants = tenants.filter(t =>
-    !search ||
-    t.business_name.toLowerCase().includes(search.toLowerCase()) ||
-    t.email?.toLowerCase().includes(search.toLowerCase()) ||
-    t.vertical.toLowerCase().includes(search.toLowerCase())
-  )
+  if (loading) {
+    return <div className="min-h-screen grid place-items-center text-slate-600"><Loader2 className="w-6 h-6 animate-spin" /></div>
+  }
 
-  if (loading) return (
-    <div className="min-h-screen bg-dark flex items-center justify-center">
-      <div className="text-white/50">Loading…</div>
-    </div>
-  )
+  if (!config || !blueprint) {
+    return <div className="min-h-screen grid place-items-center text-slate-600">Could not load operator setup.</div>
+  }
 
   return (
-    <div className="min-h-screen bg-[#0f0d0a] text-white">
-      {/* Header */}
-      <div className="bg-dark border-b border-white/10 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <main className="min-h-screen bg-slate-50 text-slate-900">
+      <div className="max-w-7xl mx-auto px-6 py-12 space-y-8">
+        <div className="flex items-start justify-between gap-6">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">Operator setup foundation</p>
+            <h1 className="mt-3 text-4xl font-semibold tracking-tight">Self-serve onboarding admin</h1>
+            <p className="mt-3 max-w-3xl text-lg text-slate-600">
+              Built from the LuxWash reference flow, but hardened for self-serve onboarding, provider validation,
+              launch readiness checks and white-label rollout across unattended infrastructure businesses.
+            </p>
+          </div>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-teal rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">S</span>
-            </div>
-            <div>
-              <span className="font-serif text-lg font-bold text-white">ScudoSystems</span>
-              <span className="ml-2 text-xs bg-gold/20 text-gold px-2 py-0.5 rounded-full font-semibold">Admin</span>
-            </div>
+            <Link href="/dashboard/go-live" className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-5 py-3 text-slate-700 font-medium">
+              Go-live checklist
+            </Link>
+            <button onClick={save} disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-white font-medium disabled:opacity-60">
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save foundation
+            </button>
           </div>
-          <a href="/dashboard" className="text-white/50 text-sm hover:text-white transition-colors flex items-center gap-1">
-            <ExternalLink className="w-4 h-4" /> My Dashboard
-          </a>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-        {/* KPI Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { icon: Users, label: 'Active Tenants', value: activeTenants.length, sub: `${tenants.length} total signups`, colour: 'text-teal' },
-            { icon: TrendingUp, label: 'Monthly MRR', value: formatCurrency(mrr), sub: `£${(arr/100).toFixed(0)} ARR`, colour: 'text-gold' },
-            { icon: UserPlus, label: 'New This Week', value: signupsThisWeek, sub: 'Signups last 7 days', colour: 'text-teal' },
-            { icon: UserMinus, label: 'Churn This Month', value: churnThisMonth, sub: 'Cancellations', colour: churnThisMonth > 0 ? 'text-red-400' : 'text-emerald-400' },
-          ].map(({ icon: Icon, label, value, sub, colour }, i) => (
-            <div key={i} className="bg-dark rounded-2xl border border-white/10 p-5">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-white/50 text-sm">{label}</p>
-                <Icon className={`w-5 h-5 ${colour}`} />
+        {error && (
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>
+        )}
+
+        <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3">
+              <ShieldCheck className="w-5 h-5 text-emerald-600" />
+              <div>
+                <h2 className="text-xl font-semibold">Launch readiness</h2>
+                <p className="text-sm text-slate-500">Validation-first onboarding to prevent the LuxWash-era setup failures.</p>
               </div>
-              <p className="font-serif text-3xl font-bold text-white">{value}</p>
-              <p className="text-white/30 text-xs mt-1">{sub}</p>
             </div>
-          ))}
-        </div>
-
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Signup chart */}
-          <div className="lg:col-span-2 bg-dark rounded-2xl border border-white/10 p-6">
-            <h3 className="font-semibold text-white mb-6">New Signups — Last 6 Months</h3>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={signupChart}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="month" tick={{ fontSize: 12, fill: 'rgba(255,255,255,0.4)' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 12, fill: 'rgba(255,255,255,0.4)' }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ background: '#1a1814', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', fontSize: '12px' }} />
-                <Bar dataKey="signups" fill="#0d6e6e" radius={[4,4,0,0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Tenants by vertical */}
-          <div className="bg-dark rounded-2xl border border-white/10 p-6">
-            <h3 className="font-semibold text-white mb-4">Active by Vertical</h3>
-            {mrrByVertical.length === 0 ? (
-              <p className="text-white/30 text-sm text-center py-8">No active tenants yet</p>
-            ) : (
-              <div className="space-y-2">
-                {mrrByVertical.map(({ name, value, colour }) => (
-                  <div key={name} className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: colour }} />
-                    <div className="flex-1 bg-white/5 rounded-full h-2">
-                      <div className="h-2 rounded-full transition-all" style={{ width: `${(value / activeTenants.length) * 100}%`, backgroundColor: colour }} />
-                    </div>
-                    <span className="text-white/60 text-xs w-6 text-right">{value}</span>
-                    <span className="text-white/40 text-xs w-16 truncate">{name}</span>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              {config.validationChecks.map(check => (
+                <div key={check.key} className="rounded-2xl border border-slate-200 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-medium">{check.label}</span>
+                    <span className={`text-xs font-semibold uppercase tracking-[0.15em] ${check.status === 'pass' ? 'text-emerald-600' : check.status === 'warn' ? 'text-amber-600' : 'text-red-600'}`}>{check.status}</span>
                   </div>
-                ))}
-              </div>
-            )}
+                  <p className="mt-2 text-sm text-slate-600">{check.message}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Tenants Table */}
-        <div className="bg-dark rounded-2xl border border-white/10 overflow-hidden">
-          <div className="p-6 border-b border-white/10 flex items-center justify-between">
+          <div className="rounded-3xl bg-slate-950 text-white p-6 shadow-xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-300">Current rollout</p>
+            <h2 className="mt-3 text-2xl font-semibold">{businessName || config.businessProfile.tradingName}</h2>
+            <p className="mt-2 text-slate-300">Industry: {blueprint.label}</p>
+            <div className="mt-6 space-y-4 text-sm text-slate-200">
+              <div className="flex items-start gap-3"><PlugZap className="w-4 h-4 mt-0.5 text-emerald-400" /><span>Payment provider: {config.providerConfig.paymentProvider}</span></div>
+              <div className="flex items-start gap-3"><RadioTower className="w-4 h-4 mt-0.5 text-sky-400" /><span>Machine provider: {config.providerConfig.machineProvider}</span></div>
+              <div className="flex items-start gap-3"><QrCode className="w-4 h-4 mt-0.5 text-violet-400" /><span>{config.servicePoints.length} {blueprint.servicePointPlural.toLowerCase()} prepared for QR launch</span></div>
+              <div className="flex items-start gap-3"><AlertTriangle className="w-4 h-4 mt-0.5 text-amber-400" /><span>Go live only after all validation checks pass cleanly.</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between gap-4 mb-6">
             <div>
-              <h3 className="font-semibold text-white">All Tenants</h3>
-              <p className="text-white/40 text-sm">{tenants.length} total businesses</p>
-            </div>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-              <input value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="Search businesses…"
-                className="pl-9 pr-4 h-9 bg-white/5 border border-white/10 rounded-xl text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-teal/50 w-56" />
+              <h2 className="text-xl font-semibold">{blueprint.servicePointPlural}</h2>
+              <p className="text-sm text-slate-500">Map each live service point clearly so QR links, provider IDs and reporting stay aligned.</p>
             </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-white/5">
-                  {['Business', 'Vertical', 'Billing', 'Status', 'MRR', 'Signed Up', 'Actions'].map(h => (
-                    <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-white/30 uppercase tracking-wide whitespace-nowrap">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {loading ? (
-                  <tr><td colSpan={7} className="text-center py-12 text-white/30">Loading…</td></tr>
-                ) : filteredTenants.map(t => (
-                  <tr key={t.id} className="hover:bg-white/3 transition-colors group">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white"
-                          style={{ backgroundColor: VERTICAL_COLOURS[t.vertical] || '#0d6e6e' }}>
-                          {t.business_name.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="text-white text-sm font-medium">{t.business_name}</p>
-                          <p className="text-white/30 text-xs">{t.email || t.owner_email || '—'}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-xs font-medium capitalize px-2 py-1 rounded-full text-white"
-                        style={{ backgroundColor: VERTICAL_COLOURS[t.vertical] + '30' }}>
-                        {t.vertical}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-white/70 text-sm">
-                      {VERTICAL_PRICING[t.vertical]?.billingModel || '—'}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                        t.plan_status === 'active' ? 'bg-emerald-900/50 text-emerald-400' :
-                        t.plan_status === 'trialing' ? 'bg-amber-900/50 text-amber-400' :
-                        t.plan_status === 'past_due' ? 'bg-red-900/50 text-red-400' :
-                        'bg-white/5 text-white/30'
-                      }`}>{t.plan_status}</span>
-                    </td>
-                    <td className="px-4 py-3 text-white font-semibold text-sm">
-                      {t.plan_status === 'active' ? formatCurrency(VERTICAL_PRICING[t.vertical]?.basePence || 0) : '—'}
-                    </td>
-                    <td className="px-4 py-3 text-white/50 text-sm whitespace-nowrap">
-                      {new Date(t.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <a href={`/book/${t.slug}`} target="_blank" rel="noopener"
-                          className="text-xs text-teal hover:underline">View Page</a>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="space-y-4">
+            {config.servicePoints.map((point, index) => (
+              <div key={`${point.externalId}-${index}`} className="grid gap-4 rounded-2xl border border-slate-200 p-4 lg:grid-cols-6">
+                <input className="rounded-xl border border-slate-300 px-4 py-3" value={point.name} onChange={e => updateServicePoint(index, { name: e.target.value })} placeholder={`${blueprint.servicePointLabel} name`} />
+                <input className="rounded-xl border border-slate-300 px-4 py-3" value={point.publicLabel} onChange={e => updateServicePoint(index, { publicLabel: e.target.value })} placeholder="Public label" />
+                <input className="rounded-xl border border-slate-300 px-4 py-3" value={point.externalId} onChange={e => updateServicePoint(index, { externalId: e.target.value })} placeholder="External ID" />
+                <input className="rounded-xl border border-slate-300 px-4 py-3" value={point.providerSiteId || ''} onChange={e => updateServicePoint(index, { providerSiteId: e.target.value })} placeholder="Provider site ID" />
+                <input className="rounded-xl border border-slate-300 px-4 py-3" value={point.providerBoxId || ''} onChange={e => updateServicePoint(index, { providerBoxId: e.target.value })} placeholder="Provider box / device ID" />
+                <label className="flex items-center gap-3 rounded-xl border border-slate-300 px-4 py-3 text-sm"><input type="checkbox" checked={point.liveModeEnabled} onChange={e => updateServicePoint(index, { liveModeEnabled: e.target.checked })} /> Live enabled</label>
+              </div>
+            ))}
           </div>
-        </div>
+        </section>
       </div>
-    </div>
+    </main>
   )
 }

@@ -26,7 +26,7 @@ function SignInPageContent() {
   const callbackError = searchParams.get('error') === 'auth_callback'
   const missingCode = searchParams.get('error') === 'missing_code'
   const resendRequested = searchParams.get('resend') === '1'
-  const demoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
+  const demoMode = true // always allow demo access
   const demoRequest = searchParams.get('demo') === '1'
   const demoVertical = searchParams.get('vertical') || 'dental'
   const emailVerificationError = searchParams.get('error') === 'email_verification'
@@ -251,16 +251,27 @@ function SignInPageContent() {
             </button>
           </form>
 
-          {demoMode && (
-            <button
-              type="button"
-              onClick={() => handleDemoLogin()}
-              disabled={demoLoading}
-              className="btn-secondary w-full h-11 mt-3 flex items-center justify-center gap-2"
-            >
-              {demoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Enter demo dashboard'}
-            </button>
-          )}
+          <div className="mt-4 rounded-xl border border-border p-4 bg-slate-50">
+            <p className="text-xs font-semibold text-dark/40 uppercase tracking-wider mb-3 text-center">Try a live demo — no sign-up needed</p>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { label: '🦷 Dental', vertical: 'dental' },
+                { label: '🚗 Supercar Hire', vertical: 'supercar' },
+                { label: '💆 Beauty Salon', vertical: 'beauty' },
+                { label: '🔧 Auto / MOT', vertical: 'auto' },
+              ].map(({ label, vertical }) => (
+                <button
+                  key={vertical}
+                  type="button"
+                  onClick={() => handleDemoLogin(vertical)}
+                  disabled={demoLoading}
+                  className="h-10 rounded-xl border border-border bg-white text-xs font-semibold text-dark/70 hover:border-teal hover:text-teal transition-all disabled:opacity-50"
+                >
+                  {demoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin mx-auto" /> : label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <p className="mt-6 text-center text-sm text-dark/50">
             Don't have an account?{' '}

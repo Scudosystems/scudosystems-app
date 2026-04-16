@@ -165,7 +165,7 @@ export async function POST(req: NextRequest) {
       brand_colour: brandingColour,
       plan: 'professional',
       plan_status: 'active',
-      trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
       onboarding_completed: true,
       booking_page_enabled: true,
       auto_confirm: true,

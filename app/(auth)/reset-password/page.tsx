@@ -14,15 +14,22 @@ export default function ResetPasswordPage() {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [loading, setLoading] = useState(false)
-  const [ready, setReady] = useState(false)
+  const [ready, setReady] = useState<boolean | null>(null) // null = still checking
   const [error, setError] = useState('')
 
   useEffect(() => {
     const checkSession = async () => {
+      // Wait briefly for Supabase to restore session from URL hash or cookie
+      await new Promise(r => setTimeout(r, 500))
       const { data } = await supabase.auth.getSession()
       setReady(!!data.session)
     }
     checkSession()
+    // Also listen for the PASSWORD_RECOVERY event Supabase fires on the reset page
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') setReady(true)
+    })
+    return () => subscription.unsubscribe()
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,7 +59,16 @@ export default function ResetPasswordPage() {
     }
   }
 
-  if (!ready) {
+  // Still checking — show spinner to avoid flashing "expired" prematurely
+  if (ready === null) {
+    return (
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-teal" />
+      </div>
+    )
+  }
+
+  if (ready === false) {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center p-6">
         <div className="w-full max-w-md bg-white rounded-2xl border border-border p-8 text-center">

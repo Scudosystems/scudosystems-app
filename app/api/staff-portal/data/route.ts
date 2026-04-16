@@ -7,6 +7,8 @@ type AccessRow = {
   staff_id?: string | null
   permissions?: { view_team_bookings?: boolean; view_own_reviews?: boolean } | null
   reviews_opt_out?: boolean | null
+  availability_status?: string | null
+  accepts_bookings?: boolean | null
 }
 type TenantGuidelinesRow = {
   id: string
@@ -137,6 +139,8 @@ export async function POST(req: NextRequest) {
       stats,
       offers: offersError ? [] : (offers || []),
       reviews_opt_out: typedAccess.reviews_opt_out ?? false,
+      availability_status: typedAccess.availability_status ?? 'available',
+      accepts_bookings: typedAccess.accepts_bookings ?? true,
       guidelines: (Array.isArray(typedTenant?.staff_guidelines) && typedTenant.staff_guidelines.length > 0)
         ? typedTenant.staff_guidelines
         : getRecommendedGuidelines(typedTenant?.vertical),

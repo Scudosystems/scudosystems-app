@@ -1,4 +1,4 @@
-/* Fonts loaded via next/font in app/layout.tsx */
+/* Fonts loaded via @fontsource-variable in app/layout.tsx */
 
 @tailwind base;
 @tailwind components;
@@ -6,6 +6,8 @@
 
 @layer base {
   :root {
+    --font-sans: 'Inter Variable', 'Inter', system-ui, sans-serif;
+    --font-serif: 'Playfair Display Variable', 'Playfair Display', Georgia, serif;
     --background:         210 40% 98%;
     --foreground:         222 47% 6%;
     --card:               0 0% 100%;

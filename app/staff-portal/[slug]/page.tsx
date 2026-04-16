@@ -5,7 +5,8 @@ import { useParams } from 'next/navigation'
 import {
   Calendar, Clock, User, Star, ChevronRight, LogOut,
   CheckCircle, AlertCircle, Loader2, BookOpen, TrendingUp,
-  MessageSquare, ShieldCheck, Eye, EyeOff, KeyRound, Timer, Briefcase, RefreshCw
+  MessageSquare, ShieldCheck, Eye, EyeOff, KeyRound, Timer, Briefcase, RefreshCw,
+  CircleCheck, CirclePause, CircleOff
 } from 'lucide-react'
 
 interface PortalSession {
@@ -98,6 +99,8 @@ export default function StaffPortalPage() {
     pendingOffers: 0,
   })
   const [reviewsOptOut, setReviewsOptOut] = useState(false)
+  const [availabilityStatus, setAvailabilityStatus] = useState<'available' | 'busy' | 'off'>('available')
+  const [availabilityUpdating, setAvailabilityUpdating] = useState(false)
   const [dataLoading, setDataLoading] = useState(false)
   const [jobOffersEnabled, setJobOffersEnabled] = useState(false)
   const [offersBlocked, setOffersBlocked] = useState<string | null>(null)
@@ -177,6 +180,9 @@ export default function StaffPortalPage() {
         setOffers(data.offers || [])
         setGuidelines(data.guidelines || [])
         setReviewsOptOut(!!data.reviews_opt_out)
+        if (data.availability_status) {
+          setAvailabilityStatus(data.availability_status as 'available' | 'busy' | 'off')
+        }
         const offersEnabled = !!data.job_offers_enabled
         setJobOffersEnabled(offersEnabled)
         setOffersBlocked(data.offers_blocked || null)
@@ -228,6 +234,25 @@ export default function StaffPortalPage() {
         reviewsOptOut: next,
       }),
     })
+  }
+
+  const updateAvailability = async (status: 'available' | 'busy' | 'off') => {
+    if (!session || availabilityUpdating) return
+    setAvailabilityUpdating(true)
+    setAvailabilityStatus(status)
+    try {
+      await fetch('/api/staff-portal/availability', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accessId: session.access_id,
+          email: session.email,
+          code: session.access_code,
+          status,
+        }),
+      })
+    } catch { /* ignore — optimistic UI already updated */ }
+    setAvailabilityUpdating(false)
   }
 
   const handleLogin = async () => {
@@ -366,17 +391,42 @@ export default function StaffPortalPage() {
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={loadData}
-              className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900"
-              title="Refresh data"
-            >
-              <RefreshCw className="w-4 h-4" /> Refresh
-            </button>
-            <button onClick={handleLogout} className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900">
-              <LogOut className="w-4 h-4" /> Sign out
-            </button>
+          <div className="flex flex-col items-end gap-3">
+            {/* Availability status toggle */}
+            <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl">
+              {([
+                { status: 'available' as const, label: 'Available', icon: CircleCheck, activeColor: '#10b981', activeBg: '#d1fae5' },
+                { status: 'busy' as const,      label: 'Busy',      icon: CirclePause, activeColor: '#f59e0b', activeBg: '#fef3c7' },
+                { status: 'off' as const,        label: 'Off',       icon: CircleOff,   activeColor: '#94a3b8', activeBg: '#f1f5f9' },
+              ] as const).map(({ status, label, icon: Icon, activeColor, activeBg }) => (
+                <button
+                  key={status}
+                  onClick={() => updateAvailability(status)}
+                  disabled={availabilityUpdating}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                  style={
+                    availabilityStatus === status
+                      ? { background: activeBg, color: activeColor }
+                      : { color: '#94a3b8' }
+                  }
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={loadData}
+                className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900"
+                title="Refresh data"
+              >
+                <RefreshCw className="w-4 h-4" /> Refresh
+              </button>
+              <button onClick={handleLogout} className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900">
+                <LogOut className="w-4 h-4" /> Sign out
+              </button>
+            </div>
           </div>
         </div>
 

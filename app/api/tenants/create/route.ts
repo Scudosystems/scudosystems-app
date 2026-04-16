@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     if (existingSlug) slug = `${slug}-${Date.now().toString(36)}`
 
     const trialEndsAt = new Date()
-    trialEndsAt.setDate(trialEndsAt.getDate() + 7)
+    trialEndsAt.setDate(trialEndsAt.getDate() + 14)
 
     const { data: tenant, error } = await (supabase.from('tenants') as any).insert({
       user_id: user.id,

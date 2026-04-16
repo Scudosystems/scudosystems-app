@@ -5,6 +5,7 @@ import { sendWelcomeEmail } from '@/lib/resend'
 import { absoluteUrl, generateSlug, sanitizeInput } from '@/lib/utils'
 import { VERTICALS } from '@/lib/verticals'
 import { getRecommendedBookingTheme, getRecommendedGuidelines } from '@/lib/industry-defaults'
+import { normalizeOperatorConfig } from '@/lib/self-serve/storage'
 import type { Database } from '@/types/database'
 
 type TenantRow = Database['public']['Tables']['tenants']['Row']
@@ -15,7 +16,12 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
-    const { businessName, vertical, address, phone, website, description, brandColour, hours, services, preferences, slug: proposedSlug, logoUrl } = body
+    const { businessName, vertical, address, phone, website, description, brandColour, hours, services, preferences, slug: proposedSlug, logoUrl, operatorConfig } = body
+
+    const isOperatorFlow = ['carwash', 'auto', 'restaurant', 'takeaway', 'grooming'].includes(vertical)
+    if (isOperatorFlow && !operatorConfig) {
+      return NextResponse.json({ error: 'Operator setup is required for this industry.' }, { status: 400 })
+    }
 
     const supabase = createSupabaseAdminClient()
 
@@ -40,7 +46,7 @@ export async function POST(req: NextRequest) {
         owner_email: user.email,
         plan: 'starter',
         plan_status: 'trialing',
-        trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
       }).select().single()
       if (error) throw error
       tenant = newTenant
@@ -90,6 +96,10 @@ export async function POST(req: NextRequest) {
       cancellation_policy: preferences?.cancellationPolicy || null,
     }
 
+    if (isOperatorFlow && operatorConfig) {
+      updatePayload.operator_config = normalizeOperatorConfig(operatorConfig)
+    }
+
     const verticalChanged = !!typedTenant?.vertical && typedTenant.vertical !== vertical
 
     if (isNewTenant || verticalChanged || !typedTenant?.booking_page_theme) {
@@ -117,7 +127,7 @@ export async function POST(req: NextRequest) {
     await (supabase.from('tenants') as any).update(updatePayload).eq('id', tenantId)
 
     // Save availability (opening hours)
-    if (hours && Array.isArray(hours)) {
+    if (!isOperatorFlow && hours && Array.isArray(hours)) {
       await (supabase.from('availability') as any).delete().eq('tenant_id', tenantId).is('staff_id', null)
       const availabilityRows = hours
         .filter((h: any) => h.isOpen)
@@ -135,7 +145,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Save services
-    if (services && Array.isArray(services)) {
+    if (!isOperatorFlow && services && Array.isArray(services)) {
       await (supabase.from('services') as any).delete().eq('tenant_id', tenantId)
       const serviceRows = services.map((s: any, idx: number) => ({
         tenant_id: tenantId,

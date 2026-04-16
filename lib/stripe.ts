@@ -34,7 +34,7 @@ export async function createStripeCustomer(email: string, name: string) {
   return stripe.customers.create({ email, name })
 }
 
-export async function createSubscription(customerId: string, priceId: string, trialDays = 7) {
+export async function createSubscription(customerId: string, priceId: string, trialDays = 14) {
   if (!stripe) throw new Error('Stripe not configured')
   return stripe.subscriptions.create({
     customer: customerId,
@@ -61,7 +61,7 @@ export async function createCheckoutSession(options: {
     customer: options.customerId,
     line_items: [{ price: options.priceId, quantity: 1 }],
     subscription_data: {
-      trial_period_days: options.trialDays ?? 7,
+      trial_period_days: options.trialDays ?? 14,
     },
     allow_promotion_codes: true,
     success_url: options.successUrl,

@@ -200,9 +200,12 @@ export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [selectedIndustry, setSelectedIndustry] = useState(VERTICAL_LIST[0])
+  const [mounted, setMounted] = useState(false)
   const demoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
 
   const industryPricing = parseBillingModel(selectedIndustry.billingModel)
+
+  useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
     const t = setInterval(() => setTestimonialIdx(i => (i + 1) % TESTIMONIALS.length), 6000)
@@ -828,7 +831,7 @@ export default function LandingPage() {
           </div>
 
           <div className="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
-            <p>© 2026 ScudoSystems part of Ntoala G (unregistered, part of Ntoala). All rights reserved.</p>
+            {mounted && <p>© 2026 ScudoSystems. All rights reserved.</p>}
             <div className="flex items-center gap-2 text-slate-500">
               <Lock className="w-3.5 h-3.5" />
               <span>Payments secured by Stripe</span>
