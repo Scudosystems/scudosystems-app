@@ -270,18 +270,19 @@ export default function BookingsPage() {
             <table className="w-full">
               <thead>
                 <tr className="bg-[#f8f6f1]">
-                  {['Date & Time', 'Customer', 'Service', 'Staff', 'Amount', 'Status', 'Queue', 'Actions'].map(h => (
+                  {['Ref', 'Date & Time', 'Customer', 'Service', 'Staff', 'Amount', 'Status', 'Queue', 'Actions'].map(h => (
                     <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-dark/50 uppercase tracking-wide whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {loading ? (
-                  <tr><td colSpan={8} className="text-center py-12 text-dark/40">Loading…</td></tr>
+                  <tr><td colSpan={9} className="text-center py-12 text-dark/40">Loading…</td></tr>
                 ) : filtered.length === 0 ? (
-                  <tr><td colSpan={8} className="text-center py-12 text-dark/40">No bookings found</td></tr>
+                  <tr><td colSpan={9} className="text-center py-12 text-dark/40">No bookings found</td></tr>
                 ) : filtered.map(b => (
                   <tr key={b.id} className="hover:bg-[#f8f6f1] transition-colors group">
+                    <td className="px-4 py-3 text-xs font-mono text-dark/50 whitespace-nowrap">{b.booking_ref || '—'}</td>
                     <td className="px-4 py-3 text-sm whitespace-nowrap">
                       <p className="font-medium text-dark">{new Date(b.booking_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                       <p className="text-dark/40">{b.booking_time.slice(0,5)}</p>

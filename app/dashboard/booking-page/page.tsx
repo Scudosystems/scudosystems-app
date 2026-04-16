@@ -193,7 +193,9 @@ export default function BookingPageDashboard() {
   const appOrigin = useMemo(() => {
     const envUrl = process.env.NEXT_PUBLIC_APP_URL
     if (envUrl && !envUrl.includes('localhost')) return envUrl
-    if (typeof window !== 'undefined') return window.location.origin
+    // On localhost use the actual origin; everywhere else always use production
+    // so QR codes never point to Vercel preview URLs (which require SSO login)
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') return window.location.origin
     return 'https://www.scudosystems.com'
   }, [])
 

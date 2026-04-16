@@ -251,28 +251,6 @@ function SignInPageContent() {
             </button>
           </form>
 
-          <div className="mt-4 rounded-xl border border-border p-4 bg-slate-50">
-            <p className="text-xs font-semibold text-dark/40 uppercase tracking-wider mb-3 text-center">Try a live demo — no sign-up needed</p>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { label: '🦷 Dental', vertical: 'dental' },
-                { label: '🚗 Supercar Hire', vertical: 'supercar' },
-                { label: '💆 Beauty Salon', vertical: 'beauty' },
-                { label: '🔧 Auto / MOT', vertical: 'auto' },
-              ].map(({ label, vertical }) => (
-                <button
-                  key={vertical}
-                  type="button"
-                  onClick={() => handleDemoLogin(vertical)}
-                  disabled={demoLoading}
-                  className="h-10 rounded-xl border border-border bg-white text-xs font-semibold text-dark/70 hover:border-teal hover:text-teal transition-all disabled:opacity-50"
-                >
-                  {demoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin mx-auto" /> : label}
-                </button>
-              ))}
-            </div>
-          </div>
-
           <p className="mt-6 text-center text-sm text-dark/50">
             Don't have an account?{' '}
             <Link href="/sign-up" className="text-teal font-medium hover:underline">
