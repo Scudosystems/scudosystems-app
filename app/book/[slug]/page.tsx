@@ -561,6 +561,14 @@ export default function PublicBookingPage() {
       return
     }
 
+    // In preview mode always show a live banner so the feature is visible regardless of time of day
+    if (isPreview) {
+      const previewHour = new Date().getHours()
+      const previewMins = previewHour * 60 + 30
+      setLiveAvailability({ time: toTimeString(previewMins), withinWindow: true })
+      return
+    }
+
     if (isSupercar) {
       const hasFleet = services.some(s => s.is_active)
       if (!hasFleet) {
