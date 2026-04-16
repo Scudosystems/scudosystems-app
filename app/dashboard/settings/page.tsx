@@ -81,7 +81,7 @@ export default function SettingsPage() {
     const payload = Object.fromEntries(
       ALLOWED_KEYS.filter(k => k in form).map(k => [k, (form as any)[k]])
     )
-    const { error } = await supabase.from('tenants').update(payload as any).eq('id', tenant.id)
+    const { error } = await (supabase.from('tenants') as any).update(payload).eq('id', tenant.id)
     if (error) {
       setSaveError(error.message)
       setSaving(false)
