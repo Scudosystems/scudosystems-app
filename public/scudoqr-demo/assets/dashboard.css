@@ -20,7 +20,7 @@ body.dashboard-page {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(231, 241, 234, 0.78);
+  background: rgba(220, 232, 247, 0.78);
   backdrop-filter: blur(18px);
 }
 
