@@ -151,6 +151,14 @@ export default function PublicBookingPage() {
   const previewVariant = forcedVariant === 'A' || forcedVariant === 'B' ? forcedVariant : null
   const isPreview = searchParams?.get('preview') === '1'
 
+  // Always use the canonical domain for share links (never expose vercel preview URLs to customers)
+  const canonicalOrigin = (() => {
+    const env = process.env.NEXT_PUBLIC_APP_URL
+    if (env && !env.includes('localhost') && !env.includes('vercel.app')) return env
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') return window.location.origin
+    return 'https://www.scudosystems.com'
+  })()
+
   const [tenant, setTenant] = useState<Tenant | null>(null)
   const [services, setServices] = useState<Service[]>([])
   const [staff, setStaff] = useState<Staff[]>([])
@@ -294,7 +302,7 @@ export default function PublicBookingPage() {
         await (supabase.from('affiliate_clicks') as any).insert({
           affiliate_id: typedAffiliate.id,
           tenant_id: tenant.id,
-          landing_url: typeof window !== 'undefined' ? window.location.href : null,
+          landing_url: `${canonicalOrigin}/book/${slug}`,
           referrer: typeof document !== 'undefined' ? document.referrer || null : null,
         })
         // Increment total_clicks on the affiliate (best-effort, ignore errors)
@@ -1243,7 +1251,7 @@ export default function PublicBookingPage() {
               </a>
               {/* WhatsApp */}
               <a
-                href={`https://wa.me/?text=${encodeURIComponent(`Book your spot: ${typeof window !== 'undefined' ? window.location.href : ''}`)}`}
+                href={`https://wa.me/?text=${encodeURIComponent(`Book your spot: ${canonicalOrigin}/book/${slug}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex flex-col items-center gap-1.5 py-3 rounded-xl transition-all hover:opacity-80 active:scale-95"

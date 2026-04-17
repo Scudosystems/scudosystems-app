@@ -297,7 +297,7 @@ export default function LandingPage() {
 
               <div className="flex flex-col sm:flex-row gap-4 mb-10">
                 <Link href="/sign-up" className="btn-primary text-base px-8 py-4 flex items-center justify-center gap-2 rounded-2xl">
-                  Start Free — 7 Days Free
+                  Start Free — 14 Days Free
                   <ArrowRight className="w-5 h-5" />
                 </Link>
                 {demoMode && (
