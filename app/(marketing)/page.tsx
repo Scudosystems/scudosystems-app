@@ -424,7 +424,7 @@ export default function LandingPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/10 text-center">
             {[
               { value: '25+',  label: 'Industries supported', subtext: 'From dental and beauty to rentals, EV and mobility operators' },
-              { value: '500+', label: 'Businesses', subtext: 'Using ScudoSystems to run bookings, teams and daily operations' },
+              { value: '100+', label: 'Businesses', subtext: 'Using ScudoSystems to run bookings, teams and daily operations' },
               { value: 'Less', label: 'Admin overhead', subtext: 'Cleaner workflows, fewer phone calls and less manual chasing' },
               { value: 'Live', label: 'Operator visibility', subtext: 'See availability, customer flow and reporting in one place' },
             ].map(({ value, label, subtext }) => (
