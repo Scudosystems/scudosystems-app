@@ -116,9 +116,9 @@ export default function PartnersPage() {
 
   const APP_URL = (() => {
     const env = process.env.NEXT_PUBLIC_APP_URL
-    if (env && !env.includes('localhost')) return env
-    if (typeof window !== 'undefined') return window.location.origin
-    return 'https://scudosystems.com'
+    if (env && !env.includes('localhost') && !env.includes('vercel.app')) return env
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') return window.location.origin
+    return 'https://www.scudosystems.com'
   })()
   const bookingBase = tenant?.slug ? `${APP_URL}/book/${tenant.slug}` : ''
   const vertical = tenant?.vertical || ''

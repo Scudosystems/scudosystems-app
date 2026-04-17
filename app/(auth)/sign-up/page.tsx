@@ -52,7 +52,7 @@ export default function SignUpPage() {
 
   const perks = [
     'Live in under 10 minutes',
-    '7-day free trial — no card needed',
+    '14-day free trial — no card needed',
     'Automated reminders included',
     'Stripe-secured payments',
   ]
@@ -106,7 +106,7 @@ export default function SignUpPage() {
           </div>
 
           <h1 className="font-serif text-3xl font-bold text-dark mb-1">Create your account</h1>
-          <p className="text-dark/50 text-sm mb-8">Start your 7-day free trial. No credit card required.</p>
+          <p className="text-dark/50 text-sm mb-8">Start your 14-day free trial. No credit card required.</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

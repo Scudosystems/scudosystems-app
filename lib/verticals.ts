@@ -388,7 +388,7 @@ export const VERTICALS: Record<VerticalId, Vertical> = {
     bookingPageLabel: 'Reserve Your Car',
     customerLabel: 'Guest',
     staffLabel: 'Agent',
-    billingModel: '£399/mo',
+    billingModel: '£299/mo',
     defaultServices: [
       { name: 'Half Day Hire', description: '4-hour supercar experience', price_pence: 50000, duration_minutes: 240, deposit_pence: 20000, requires_deposit: true },
       { name: 'Full Day Hire', description: '8-hour full day rental', price_pence: 90000, duration_minutes: 480, deposit_pence: 30000, requires_deposit: true },

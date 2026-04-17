@@ -388,9 +388,9 @@ export default function StaffAccessPage() {
 
   const appOrigin = (() => {
     const env = process.env.NEXT_PUBLIC_APP_URL
-    if (env && !env.includes('localhost')) return env
-    if (typeof window !== 'undefined') return window.location.origin
-    return 'https://scudosystems.com'
+    if (env && !env.includes('localhost') && !env.includes('vercel.app')) return env
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') return window.location.origin
+    return 'https://www.scudosystems.com'
   })()
   const portalUrl = tenantSlug ? `${appOrigin}/staff-portal/${tenantSlug}` : ''
 

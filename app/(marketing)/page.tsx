@@ -23,7 +23,7 @@ const TESTIMONIALS = [
 
 const FEATURES = [
   { icon: Clock,        title: '24/7 Online Booking',          desc: 'Stay available around the clock so customers can book, reserve or request the right slot without waiting for your team to reply.' },
-  { icon: CreditCard,   title: 'Monthly Subscription Billing',  desc: 'One clean monthly subscription per business, with a 7-day free trial and self-serve billing when you need to upgrade, update or reactivate.' },
+  { icon: CreditCard,   title: 'Monthly Subscription Billing',  desc: 'One clean monthly subscription per business, with a 14-day free trial and self-serve billing when you need to upgrade, update or reactivate.' },
   { icon: Zap,          title: 'Live Availability Banner',     desc: 'Show live availability when it matters — whether that is a slot, a bay, a vehicle or the next available team member.' },
   { icon: Bell,         title: 'Automated Reminders',          desc: 'SMS and email reminders at 24 and 48 hours reduce no‑shows and last‑minute drop‑outs.' },
   { icon: Shield,       title: 'No‑Show Protection',           desc: 'Require a deposit to confirm. Customers who’ve paid are far more likely to show.' },
@@ -50,11 +50,11 @@ const STEPS = [
 const FAQS = [
   { q: 'How long does setup actually take?', a: 'Most businesses are live in under 10 minutes. You pick your industry, add your services and hours, customise your brand colours, and your booking page is ready to share. No tech skills required.' },
   { q: 'Do my customers need to sign up or download anything?', a: 'No. Customers visit your booking link, pick a slot, and confirm — no account, no app, no friction. Works on any device.' },
-  { q: 'How does billing work?', a: 'ScudoSystems is billed monthly per business. Your 7-day free trial starts first, then billing continues on the monthly plan for your industry, which you can manage any time from your dashboard settings.' },
+  { q: 'How does billing work?', a: 'ScudoSystems is billed monthly per business. Your 14-day free trial starts first, then billing continues on the monthly plan for your industry, which you can manage any time from your dashboard settings.' },
   { q: 'Can I charge different prices for different services?', a: 'Yes. Every service can have its own price, duration, and deposit rules. You are never locked into one flat price.' },
   { q: 'Is pricing the same for every industry?', a: 'No. Each industry has its own monthly price based on the workflows, forms, and tools included for that business type. Everything sits inside one monthly subscription.' },
   { q: 'Can I cancel anytime?', a: 'Yes — no contracts, no lock-in. Cancel from your dashboard settings at any time. We\'re confident you\'ll stay because the results speak for themselves.' },
-  { q: 'What happens after the 7-day free trial?', a: 'If you don\'t add a payment method, your account pauses — no charges, ever. When you\'re ready to go live, pick a plan and reactivate in seconds.' },
+  { q: 'What happens after the 14-day free trial?', a: 'If you don\'t add a payment method, your account pauses — no charges, ever. When you\'re ready to go live, pick a plan and reactivate in seconds.' },
 ]
 
 const CORE_FEATURES = [
@@ -652,7 +652,7 @@ export default function LandingPage() {
                       ) : null}
                     </div>
 
-                    <p className="text-blue-200 text-sm mb-1">7-day free trial included</p>
+                    <p className="text-blue-200 text-sm mb-1">14-day free trial included</p>
                     <p className="text-blue-300/60 text-xs">All prices exclude VAT · No setup fee · Cancel anytime</p>
 
                     {selectedIndustry.id === 'supercar' ? (
@@ -666,7 +666,7 @@ export default function LandingPage() {
                     ) : (
                       <>
                         <Link href="/sign-up" className="mt-6 w-full flex items-center justify-center gap-2 bg-white text-teal font-black py-4 rounded-2xl text-base hover:bg-blue-50 transition-colors shadow-xl">
-                          Start 7-day free trial
+                          Start 14-day free trial
                           <ArrowRight className="w-5 h-5" />
                         </Link>
                         <p className="text-blue-300/60 text-xs text-center mt-2">No credit card required to start</p>
@@ -711,7 +711,7 @@ export default function LandingPage() {
           </div>
 
           <p className="text-center text-sm text-slate-400 mt-6">
-            Secure monthly billing · 7-day free trial · Pricing tailored for service businesses, rentals and operators
+            Secure monthly billing · 14-day free trial · Pricing tailored for service businesses, rentals and operators
           </p>
         </div>
       </section>
