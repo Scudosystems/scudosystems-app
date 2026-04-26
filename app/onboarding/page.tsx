@@ -233,7 +233,20 @@ export default function OnboardingPage() {
       if (!res.ok) throw new Error('Save failed')
 
       setComplete(true)
-      setTimeout(() => router.push('/dashboard?welcome=1'), 3500)
+      // Redirect to Stripe Checkout to activate 14-day trial
+      setTimeout(async () => {
+        try {
+          const res = await fetch('/api/stripe/checkout?from=setup', { method: 'POST' })
+          const data = await res.json()
+          if (data.url) {
+            window.location.href = data.url
+          } else {
+            router.push('/subscribe')
+          }
+        } catch {
+          router.push('/subscribe')
+        }
+      }, 3000)
     } catch (err) {
       console.error(err)
       setSaveError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
@@ -350,7 +363,7 @@ export default function OnboardingPage() {
             <Check className="w-10 h-10 text-white" strokeWidth={3} />
           </div>
           <h1 className="font-serif text-4xl font-bold text-dark mb-3">You're Live! 🎉</h1>
-          <p className="text-dark/60 text-lg mb-2">Your booking page is ready. Redirecting to your dashboard…</p>
+          <p className="text-dark/60 text-lg mb-2">Your booking page is ready. Taking you to activate your free trial…</p>
           <p className="text-sm text-dark/40">Share your booking link and start taking bookings right now.</p>
           <div className="mt-6 bg-white rounded-2xl border border-border p-4 text-left max-w-md mx-auto">
             <div className="flex items-center gap-3">
@@ -359,7 +372,7 @@ export default function OnboardingPage() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-dark">Your 14-day free trial is live</p>
-                <p className="text-xs text-dark/50">Monthly billing is managed from the Billing tab in your dashboard settings whenever you’re ready.</p>
+                <p className="text-xs text-dark/50">You’ll enter your card details on the next screen to start your 14-day free trial. No charge for 14 days.</p>
               </div>
             </div>
           </div>

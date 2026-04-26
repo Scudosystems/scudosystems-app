@@ -6,6 +6,12 @@ const PUBLIC_PATHS = [
   '/',
   '/sign-in',
   '/sign-up',
+  '/subscribe',
+  '/locked',
+  '/forgot-password',
+  '/reset-password',
+  '/privacy',
+  '/terms',
   '/auth/callback',
   '/auth/confirm',
   '/book/',
@@ -16,6 +22,12 @@ const PUBLIC_PATHS = [
   '/api/wait/',
   '/api/staff-portal/',
   '/api/reviews/',
+]
+
+// Emails that bypass the subscription gate (admin + demo accounts)
+const BYPASS_EMAILS = [
+  process.env.ADMIN_EMAIL,
+  process.env.DEMO_EMAIL,
 ]
 
 export async function middleware(request: NextRequest) {
@@ -56,6 +68,37 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)
+  }
+
+  // ── Subscription gate — dashboard routes only ──────────────────────────
+  if (user && pathname.startsWith('/dashboard')) {
+    const isBypass = BYPASS_EMAILS.includes(user.email)
+
+    if (!isBypass) {
+      const { data: tenant } = await supabase
+        .from('tenants')
+        .select('plan_status')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      const status = (tenant as any)?.plan_status as string | null | undefined
+
+      // No subscription started yet → must activate trial
+      if (!status) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/subscribe'
+        return NextResponse.redirect(url)
+      }
+
+      // Trial expired / payment failed / cancelled → locked page
+      if (status === 'past_due' || status === 'cancelled') {
+        const url = request.nextUrl.clone()
+        url.pathname = '/locked'
+        return NextResponse.redirect(url)
+      }
+
+      // 'trialing' | 'active' → allowed through
+    }
   }
 
   return supabaseResponse

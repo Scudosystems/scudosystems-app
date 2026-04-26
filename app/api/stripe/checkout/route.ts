@@ -11,7 +11,7 @@ import type { Database } from '@/types/database'
 
 type TenantStripeRow = Pick<Database['public']['Tables']['tenants']['Row'], 'id' | 'business_name' | 'owner_email' | 'stripe_customer_id' | 'vertical'>
 
-export async function POST() {
+export async function POST(req: Request) {
   const user = await getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
 
@@ -39,11 +39,17 @@ export async function POST() {
     await (supabase.from('tenants') as any).update({ stripe_customer_id: customerId }).eq('id', typedTenant.id)
   }
 
+  // `from=setup` means first-time trial activation — land on welcome dashboard
+  const from = new URL(req.url).searchParams.get('from')
+  const successUrl = from === 'setup'
+    ? absoluteUrl('/dashboard?welcome=1&subscribed=1')
+    : absoluteUrl('/dashboard/settings?billing=success')
+
   const session = await createCheckoutSession({
     customerId,
     priceId,
-    successUrl: absoluteUrl('/dashboard/settings?billing=success'),
-    cancelUrl: absoluteUrl('/dashboard/settings?billing=cancel'),
+    successUrl,
+    cancelUrl: absoluteUrl('/subscribe?cancelled=1'),
     trialDays: 14,
   })
 

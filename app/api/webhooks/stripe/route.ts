@@ -70,10 +70,27 @@ export async function POST(req: NextRequest) {
         break
       }
 
+      case 'customer.subscription.trial_will_end': {
+        // Fires 3 days before trial ends — send reminder email
+        const sub = event.data.object as Stripe.Subscription
+        const { data: tenant } = await supabase
+          .from('tenants')
+          .select('owner_email, business_name, trial_ends_at')
+          .eq('stripe_customer_id', sub.customer as string)
+          .single()
+        const typedTenant = tenant as { owner_email?: string | null; business_name?: string | null; trial_ends_at?: string | null } | null
+
+        if (typedTenant?.owner_email) {
+          await sendTrialEndingEmail(typedTenant.owner_email, typedTenant.business_name || '')
+        }
+        break
+      }
+
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice
-        // Plan is already active via subscription.updated
-        console.log('Payment succeeded for customer:', invoice.customer)
+        // Ensure plan_status is active after successful payment
+        await (supabase.from('tenants') as any).update({ plan_status: 'active' })
+          .eq('stripe_customer_id', invoice.customer as string)
         break
       }
 
