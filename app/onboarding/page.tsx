@@ -501,7 +501,10 @@ export default function OnboardingPage() {
                 <p className="text-xs text-dark/30 mt-1">{description.length}/160</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-dark mb-2">Business Logo</label>
+                <label className="block text-sm font-medium text-dark mb-1">
+                  Business Logo
+                  <span className="ml-2 text-xs font-normal text-dark/35 normal-case">— you can add this later</span>
+                </label>
                 <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-teal/40 hover:bg-teal/5 transition-all">
                   {logoPreview ? (
                     <img src={logoPreview} alt="Logo preview" className="h-24 w-auto object-contain rounded" />
