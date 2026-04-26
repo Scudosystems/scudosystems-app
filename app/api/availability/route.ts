@@ -41,9 +41,11 @@ export async function GET() {
 
 /**
  * POST /api/availability
- * Toggle a slot: if a row already exists for (day, startTime, no staff_id) → flip is_active.
- * Otherwise insert a new active row.
- * Body: { day_of_week, start_time, end_time }
+ * Set a slot to a specific state. Accepts is_active explicitly — never toggles.
+ * If a row already exists → update is_active to the requested value.
+ * If no row and is_active: true → insert a new active row.
+ * If no row and is_active: false → noop (nothing to close).
+ * Body: { day_of_week, start_time, end_time, is_active: boolean }
  */
 export async function POST(req: NextRequest) {
   const user = await getUser()
@@ -53,7 +55,11 @@ export async function POST(req: NextRequest) {
   const tenantId = await getTenantId(supabase, user.id)
   if (!tenantId) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 })
 
-  const { day_of_week, start_time, end_time } = await req.json()
+  const { day_of_week, start_time, end_time, is_active } = await req.json()
+
+  if (typeof is_active !== 'boolean') {
+    return NextResponse.json({ error: 'is_active (boolean) is required' }, { status: 400 })
+  }
 
   // Check if a row already exists for this slot
   const { data: existingRows } = await supabase
@@ -69,16 +75,21 @@ export async function POST(req: NextRequest) {
   const existing = availabilityRows.length > 0 ? availabilityRows[0] : null
 
   if (existing) {
-    // Toggle is_active
+    // SET is_active to the requested value (not toggle)
     const { data: updated, error } = await (supabase
       .from('availability') as any)
-      .update({ is_active: !existing.is_active })
+      .update({ is_active })
       .eq('id', existing.id)
       .select()
       .single()
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ action: 'updated', row: updated })
   } else {
+    // No existing row
+    if (!is_active) {
+      // Nothing to close — return a no-op success
+      return NextResponse.json({ action: 'noop' })
+    }
     // Insert new active slot
     const { data: inserted, error } = await (supabase
       .from('availability') as any)

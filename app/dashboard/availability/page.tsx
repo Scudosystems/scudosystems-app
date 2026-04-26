@@ -21,6 +21,7 @@ export default function AvailabilityPage() {
   const [addingBlock, setAddingBlock] = useState(false)
   const [savingBlock, setSavingBlock] = useState(false)
   const [removingBlock, setRemovingBlock] = useState<string | null>(null)
+  const [saveError, setSaveError] = useState('')
 
   // ── Drag-to-paint refs ────────────────────────────────────────────────────────
   // Using refs (not state) so drag state never triggers re-renders mid-paint.
@@ -100,7 +101,9 @@ export default function AvailabilityPage() {
   }
 
   // ── Persist a single slot (fires after optimistic update) ─────────────────────
-  async function persistSlot(day: number, hour: number) {
+  // open = true  → mark slot as available
+  // open = false → mark slot as unavailable
+  async function persistSlot(day: number, hour: number, open: boolean) {
     const start = hStr(hour)
     const end   = hStr(hour + 1)
     const key   = `${day}-${hour}`
@@ -108,18 +111,33 @@ export default function AvailabilityPage() {
       const res  = await fetch('/api/availability', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ day_of_week: day, start_time: start, end_time: end }),
+        body: JSON.stringify({ day_of_week: day, start_time: start, end_time: end, is_active: open }),
       })
       const data = await res.json()
-      if (res.ok && data.row) {
+      if (!res.ok) {
+        console.error('Availability persist failed:', data.error)
+        setSaveError('Could not save — please refresh and try again.')
+        // Roll back the optimistic update
+        setSlotOptimistic(day, hour, !open)
+        return
+      }
+      if (data.row) {
         setAvailability(prev => {
-          const clean   = prev.filter(a => a.id !== `__tmp__${key}`)
+          const clean    = prev.filter(a => a.id !== `__tmp__${key}`)
           const existIdx = clean.findIndex(a => a.id === data.row.id)
           if (existIdx >= 0) return clean.map(a => a.id === data.row.id ? data.row : a)
           return [...clean, data.row]
         })
+      } else if (data.action === 'noop') {
+        // Slot didn't exist and open=false — remove any stray tmp row
+        setAvailability(prev => prev.filter(a => a.id !== `__tmp__${key}`))
       }
-    } catch (e) { console.error('Availability persist failed:', e) }
+      setSaveError('')
+    } catch (e) {
+      console.error('Availability persist failed:', e)
+      setSaveError('Could not save — please check your connection and try again.')
+      setSlotOptimistic(day, hour, !open)
+    }
   }
 
   // ── Drag-to-paint event handlers ──────────────────────────────────────────────
@@ -155,9 +173,11 @@ export default function AvailabilityPage() {
     visitedRef.current = new Set()
     changedRef.current = new Set()
     // Batch-persist all changed cells in parallel
+    // paintModeRef.current is the target state (true = open, false = closed)
+    const targetOpen = paintModeRef.current
     await Promise.all(cells.map(key => {
       const [d, h] = key.split('-').map(Number)
-      return persistSlot(d, h)
+      return persistSlot(d, h, targetOpen)
     }))
   }
 
@@ -167,7 +187,7 @@ export default function AvailabilityPage() {
     const target   = !allOpen
     const toChange = HOURS.filter(h => currentIsAvailable(day, h) !== target)
     toChange.forEach(h => setSlotOptimistic(day, h, target))
-    await Promise.all(toChange.map(h => persistSlot(day, h)))
+    await Promise.all(toChange.map(h => persistSlot(day, h, target)))
   }
 
   // ── Toggle whole hour row (click hour label) ─────────────────────────────────
@@ -176,7 +196,7 @@ export default function AvailabilityPage() {
     const target   = !allOpen
     const toChange = [0,1,2,3,4,5,6].filter(d => currentIsAvailable(d, hour) !== target)
     toChange.forEach(d => setSlotOptimistic(d, hour, target))
-    await Promise.all(toChange.map(d => persistSlot(d, hour)))
+    await Promise.all(toChange.map(d => persistSlot(d, hour, target)))
   }
 
   // ── Add blocked time ──────────────────────────────────────────────────────────
@@ -243,6 +263,16 @@ export default function AvailabilityPage() {
         <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
           <AlertTriangle className="w-4 h-4 flex-shrink-0" />
           {loadError}
+        </div>
+      )}
+
+      {saveError && (
+        <div className="flex items-center justify-between gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+          <span className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+            {saveError}
+          </span>
+          <button onClick={() => setSaveError('')} className="text-red-400 hover:text-red-600 text-xs underline flex-shrink-0">Dismiss</button>
         </div>
       )}
 
