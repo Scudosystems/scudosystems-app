@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
         const typedTenant = tenant as { owner_email?: string | null; business_name?: string | null; trial_ends_at?: string | null } | null
 
         if (typedTenant?.owner_email) {
-          await sendTrialEndingEmail(typedTenant.owner_email, typedTenant.business_name || '')
+          await sendTrialEndingEmail(typedTenant.owner_email, typedTenant.business_name || '', 3)
         }
         break
       }
