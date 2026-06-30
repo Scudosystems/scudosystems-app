@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QR Wash Payment Demo</title>
+  <style>
+    :root{
+      --violet:#8150e8;
+      --violet-2:#6f42dc;
+      --midnight:#070d3a;
+      --midnight-2:#0c1554;
+      --yellow:#fff43d;
+      --cyan:#08d8ff;
+      --green:#00f09a;
+      --white:#fff;
+      --muted:#c9d1ff;
+      --card:rgba(255,255,255,.08);
+      --line:rgba(255,255,255,.16);
+      --shadow:0 24px 70px rgba(0,0,0,.35);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:radial-gradient(circle at 20% 0%,rgba(129,80,232,.45),transparent 32%),linear-gradient(180deg,var(--midnight),#030722);color:var(--white)}
+    .topbar{display:none}
+    .wrap{width:min(1120px,92vw);margin:0 auto;padding:24px 0 56px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:32px}
+    .brand{display:flex;align-items:center;gap:14px}.logo{border:4px solid #fff;border-radius:999px;padding:9px 20px;font-weight:950;line-height:.9;letter-spacing:.4px;background:var(--violet);box-shadow:0 0 0 5px rgba(255,255,255,.06)}.logo span{display:block;font-size:11px;text-align:center}.pill{background:rgba(255,244,61,.14);border:1px solid rgba(255,244,61,.5);color:var(--yellow);padding:10px 14px;border-radius:999px;font-weight:800;font-size:13px}.grid{display:grid;grid-template-columns:1.08fr .92fr;gap:28px;align-items:start}.hero{padding:28px 0}.eyebrow{color:var(--yellow);font-weight:900;letter-spacing:.18em;text-transform:uppercase;font-size:12px}.hero h1{font-size:clamp(42px,7vw,78px);line-height:.92;margin:16px 0 18px;letter-spacing:-.06em}.hero p{color:var(--muted);font-size:18px;line-height:1.55;max-width:640px}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px}.step{background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:18px;padding:15px}.step b{display:block;color:var(--yellow);margin-bottom:5px}.phone{background:linear-gradient(180deg,#fff,#eef0ff);color:#111936;border-radius:34px;padding:18px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.7)}.screen{background:#f8f9ff;border-radius:24px;overflow:hidden}.photo{height:185px;background:radial-gradient(circle at 22% 28%,rgba(255,244,61,.95) 0 4px,transparent 5px),radial-gradient(circle at 76% 22%,rgba(8,216,255,.75) 0 5px,transparent 6px),radial-gradient(circle at 52% 64%,rgba(0,240,154,.8) 0 4px,transparent 5px),linear-gradient(135deg,#8150e8 0%,#0b1458 54%,#05092f 100%);position:relative;overflow:hidden}.photo:before{content:'FAST QR WASH';position:absolute;left:22px;bottom:26px;color:white;font-size:28px;font-weight:950;letter-spacing:-.04em}.photo:after{content:'';position:absolute;right:-34px;top:28px;width:170px;height:170px;border:18px solid rgba(255,255,255,.13);border-radius:50%;box-shadow:-130px 56px 0 -54px rgba(255,255,255,.16)}.screen-body{padding:20px}.selected{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}.selected small{display:block;color:#66708d;font-weight:800;margin-bottom:4px}.selected strong{display:block;font-size:21px;line-height:1.12}.status{font-size:12px;font-weight:900;color:#0c8b5d;background:#ddfff1;padding:8px 10px;border-radius:999px}.amounts{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:16px 0}.amount{border:2px solid #dfe3f2;border-radius:18px;padding:15px;background:#fff;cursor:pointer;transition:.18s ease;text-align:left}.amount:hover,.amount.active{border-color:var(--violet);transform:translateY(-2px);box-shadow:0 10px 22px rgba(129,80,232,.18)}.amount.active{background:#f3efff}.amount b{display:block;font-size:22px}.amount small{color:#56607c;font-weight:700}.amount.bonus{border-color:var(--green);box-shadow:0 0 0 4px rgba(0,240,154,.12),0 12px 28px rgba(0,160,105,.18);position:relative;animation:bonusPulse 1.55s ease-in-out infinite}.amount.bonus b{color:#048a5c}.amount.bonus:before{content:'POPULAR';position:absolute;right:10px;top:-10px;background:var(--green);color:#052b21;font-size:10px;font-weight:950;padding:4px 8px;border-radius:999px;animation:badgePop 1.55s ease-in-out infinite}.amount.bonus:after{content:'';position:absolute;inset:-7px;border-radius:22px;border:2px solid rgba(0,240,154,.58);opacity:.65;animation:bonusRing 1.55s ease-out infinite;pointer-events:none}@keyframes bonusPulse{0%,100%{transform:translateY(-2px) scale(1)}18%{transform:translateY(-4px) scale(1.025)}34%{transform:translateY(-1px) scale(.995)}50%{transform:translateY(-3px) scale(1.018)}}@keyframes bonusRing{0%{transform:scale(.96);opacity:.72}100%{transform:scale(1.08);opacity:0}}@keyframes badgePop{0%,100%{transform:rotate(-1deg) scale(1)}50%{transform:rotate(2deg) scale(1.08)}}.bonus-note{background:#06133a;color:white;border-radius:18px;padding:14px;border:1px solid rgba(129,80,232,.35)}.bonus-note b{color:var(--green)}.paybtn{width:100%;border:0;border-radius:18px;background:linear-gradient(135deg,var(--yellow),#ffe600);color:#10131f;font-size:18px;font-weight:950;padding:17px 18px;margin-top:16px;box-shadow:0 14px 34px rgba(255,244,61,.22);cursor:pointer}.paybtn:hover{transform:translateY(-1px)}.methods{display:flex;gap:9px;margin-top:12px;flex-wrap:wrap}.method{background:#fff;border:1px solid #e1e5f4;border-radius:12px;padding:9px 11px;font-weight:900}.mini{color:#65708d;font-size:12px;line-height:1.4;margin-top:14px}.dashboard-link{display:inline-flex;align-items:center;gap:8px;color:#fff;background:rgba(129,80,232,.38);border:1px solid rgba(255,255,255,.22);padding:12px 16px;border-radius:999px;text-decoration:none;font-weight:900;margin-top:20px}.dashboard-link:hover{background:rgba(129,80,232,.58)}.success{display:none;margin-top:14px;background:#eafff6;color:#07432f;border:1px solid #80f1c7;border-radius:16px;padding:14px;font-weight:850}body.paid .success{display:block}@media(max-width:860px){.grid{grid-template-columns:1fr}.steps{grid-template-columns:1fr}.phone{max-width:480px;margin:auto}header{align-items:flex-start;flex-direction:column}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <div class="brand"><div><b>QR Wash Demo</b><br><small style="color:var(--muted)">Secure wash payments and dashboard</small></div></div>
+      <div class="pill">Demo only - no live payment</div>
+    </header>
+    <section class="grid">
+      <div class="hero">
+        <div class="eyebrow">Fast self-service wash payments</div>
+        <h1>Scan. Pay. Start washing.</h1>
+        <div class="steps"><div class="step"><b>1. Choose bay</b>Bay 4 - Nottingham selected</div><div class="step"><b>2. Pick credit</b>Standard or bonus top-ups</div><div class="step"><b>3. Pay securely</b>Apple Pay, Google Pay or card</div></div>
+      </div>
+      <aside class="phone">
+        <div class="screen">
+          <div class="screen-body">
+            <div class="selected"><div><small>Demo Wash Site</small><strong>Bay 4 selected</strong></div><span class="status">Available</span></div>
+            <div class="amounts">
+              <button class="amount"><b>£3</b><small>Quick rinse</small></button>
+              <button class="amount bonus active"><b>£5 → £6</b><small>Extra wash credit</small></button>
+              <button class="amount"><b>£7</b><small>Full wash</small></button>
+              <button class="amount"><b>£10</b><small>Premium wash</small></button>
+            </div>
+            <div class="bonus-note"><b>Bonus credit:</b> Pay £5 and receive £6 total credit to spend on your wash.</div>
+            <button class="paybtn" onclick="document.body.classList.add('paid')">Pay £5.00 securely</button>
+            <div class="methods"><span class="method"> Pay</span><span class="method">Google Pay</span><span class="method">Card</span></div>
+            <div class="success">Payment approved. Bay 4 is ready to start.</div>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
+</body>
+</html>

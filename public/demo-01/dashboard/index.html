@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Multi-Site Demo Dashboard</title>
+  <style>
+    :root{--violet:#8150e8;--violet2:#6c42d9;--navy:#060b35;--navy2:#0a1252;--yellow:#fff43d;--green:#00f09a;--red:#ff4d63;--cyan:#08d8ff;--text:#f9fbff;--muted:#aeb9ef;--card:rgba(255,255,255,.075);--line:rgba(255,255,255,.14);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 0 0,rgba(129,80,232,.45),transparent 30%),linear-gradient(180deg,var(--navy),#03061f);color:var(--text)}.bar{display:none}.shell{width:min(1240px,94vw);margin:auto;padding:24px 0 50px}.nav{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:22px}.logo{border:3px solid #fff;border-radius:999px;background:var(--violet);padding:8px 18px;font-weight:950;line-height:.9}.logo span{display:block;font-size:10px;text-align:center}.nav a{color:#fff;text-decoration:none;background:rgba(255,255,255,.09);border:1px solid var(--line);padding:10px 14px;border-radius:999px;font-weight:850}.hero{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:18px}.hero h1{font-size:clamp(32px,5vw,54px);letter-spacing:-.05em;margin:0 0 8px}.hero p{color:var(--muted);margin:0;line-height:1.5}.filters{display:flex;gap:10px;flex-wrap:wrap}.chip{border:1px solid var(--line);background:rgba(255,255,255,.07);color:#fff;border-radius:999px;padding:10px 13px;font-weight:850}.chip.active{background:var(--yellow);color:#10131f}.metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin:18px 0}.metric{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:0 18px 45px rgba(0,0,0,.18)}.metric small{color:var(--muted);font-weight:850;text-transform:uppercase;letter-spacing:.12em}.metric b{display:block;font-size:32px;margin:9px 0 6px;letter-spacing:-.04em}.metric span{color:var(--green);font-weight:850}.live-number{font-variant-numeric:tabular-nums}.forecast-card{border-color:rgba(255,244,61,.38);background:linear-gradient(135deg,rgba(255,244,61,.12),rgba(129,80,232,.10))}.forecast-card b{color:var(--yellow)}.grid{display:grid;grid-template-columns:1.35fr .65fr;gap:14px}.panel{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:20px;overflow:hidden}.panel h2{font-size:18px;margin:0 0 15px}.sites{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.site{border:1px solid var(--line);background:rgba(255,255,255,.06);border-radius:18px;padding:15px}.site-top{display:flex;justify-content:space-between;gap:8px}.site b{font-size:17px}.badge{font-size:12px;font-weight:950;border-radius:999px;padding:6px 9px;background:#11395a;color:#8beaff}.badge.live{background:#073d2d;color:var(--green)}.site-row{display:flex;justify-content:space-between;margin-top:10px;color:var(--muted)}.barrow{height:8px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:12px}.fill{height:100%;background:linear-gradient(90deg,var(--violet),var(--cyan))}.table{width:100%;border-collapse:collapse}.table th{text-align:left;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.12em;padding:11px;border-bottom:1px solid var(--line)}.table td{padding:13px 11px;border-bottom:1px solid rgba(255,255,255,.08)}.ok{color:var(--green);font-weight:900}.warn{color:var(--yellow);font-weight:900}.failed{color:var(--red);font-weight:900}.bonus{background:linear-gradient(135deg,rgba(0,240,154,.16),rgba(129,80,232,.18));border-color:rgba(0,240,154,.42)}.bonus h2{color:var(--green)}.hours{display:grid;gap:10px}.hour{display:grid;grid-template-columns:70px 1fr 50px;align-items:center;gap:10px;color:var(--muted);font-size:14px}.hour div:nth-child(2){height:10px;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden}.hour i{display:block;height:100%;background:var(--yellow);border-radius:999px}.notice{margin-top:14px;border:1px solid rgba(255,244,61,.35);background:rgba(255,244,61,.1);border-radius:18px;padding:15px;color:#fff7a8;line-height:1.45}.recommendation{margin-top:14px;border:1px solid rgba(0,240,154,.45);background:rgba(0,240,154,.10);border-radius:18px;padding:15px}.recommendation small{display:block;color:var(--green);font-weight:950;text-transform:uppercase;letter-spacing:.12em;margin-bottom:7px}.recommendation strong{display:block;font-size:22px;letter-spacing:-.03em}.recommendation span{display:block;color:var(--muted);line-height:1.45;margin:8px 0 12px}.recommendation-actions{display:flex;gap:10px;flex-wrap:wrap}.recommendation button{border:0;border-radius:13px;background:var(--green);color:#052b21;font-weight:950;padding:11px 13px;cursor:pointer}.recommendation button.secondary{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.22)}.login{position:fixed;inset:0;background:rgba(3,6,31,.88);backdrop-filter:blur(10px);display:grid;place-items:center;padding:20px}.login.hidden{display:none}.login-card{width:min(420px,100%);background:#fff;color:#14192c;border-radius:26px;padding:26px;box-shadow:0 30px 90px rgba(0,0,0,.45)}.login-card h2{font-size:28px;margin:0 0 8px}.login-card p{color:#5d667d}.login-card input{width:100%;border:1px solid #dfe4f4;border-radius:14px;padding:14px;font-size:16px;margin:8px 0 12px}.login-card button{width:100%;border:0;border-radius:14px;background:var(--violet);color:white;font-weight:950;padding:14px;font-size:16px}.hint{font-size:13px;color:#6e768c}@media(max-width:1100px){.metrics{grid-template-columns:repeat(3,1fr)}}@media(max-width:900px){.metrics{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.sites{grid-template-columns:1fr}.hero{align-items:flex-start;flex-direction:column}}@media(max-width:560px){.metrics{grid-template-columns:1fr}.table{font-size:13px}.nav{align-items:flex-start;flex-direction:column}}
+  </style>
+</head>
+<body>
+<main class="shell">
+  <nav class="nav"><div style="display:flex;align-items:center;gap:14px"><div><b>Operator dashboard demo</b><br><small style="color:var(--muted)">Secure wash payments and reporting</small></div></div><a href="/demo-01/">View payment page</a></nav>
+  <section class="hero"><div><h1>Multi-site wash performance</h1><p>Example operator view with fake numbers for revenue, locations, bonus offers and machine-start visibility.</p></div><div class="filters"><button class="chip active">Today</button><button class="chip">Week</button><button class="chip">Month</button><button class="chip">All sites</button></div></section>
+  <section class="metrics"><div class="metric"><small>Today revenue</small><b class="live-number" data-prefix="£" data-value="2846">£0</b><span>+18% vs last Friday</span></div><div class="metric"><small>QR payments</small><b class="live-number" data-value="421">0</b><span>96% successful starts</span></div><div class="metric"><small>Bonus packs</small><b class="live-number" data-value="138">0</b><span>£5 to £6 most popular</span></div><div class="metric"><small>Avg top-up</small><b class="live-number" data-prefix="£" data-value="6.76" data-decimals="2" data-static="true">£0.00</b><span>+£1.12 after bonus</span></div><div class="metric forecast-card"><small>Projected today</small><b id="projectedRevenue">£4,120</b><span id="projectedNote">Based on current pace</span></div></section>
+  <section class="grid"><div class="panel"><h2>Revenue by location</h2><div class="sites"><div class="site"><div class="site-top"><b>Birmingham</b><span class="badge live">Live</span></div><div class="site-row"><span>Today</span><strong class="site-revenue" data-site="Birmingham" data-value="612">£612</strong></div><div class="barrow"><div class="fill" style="width:92%"></div></div></div><div class="site"><div class="site-top"><b>Wolverhampton</b><span class="badge live">Live</span></div><div class="site-row"><span>Today</span><strong class="site-revenue" data-site="Wolverhampton" data-value="448">£448</strong></div><div class="barrow"><div class="fill" style="width:68%"></div></div></div><div class="site"><div class="site-top"><b>Coventry</b><span class="badge live">Live</span></div><div class="site-row"><span>Today</span><strong class="site-revenue" data-site="Coventry" data-value="721">£721</strong></div><div class="barrow"><div class="fill" style="width:100%"></div></div></div><div class="site"><div class="site-top"><b>Walsall</b><span class="badge">Busy</span></div><div class="site-row"><span>Today</span><strong class="site-revenue" data-site="Walsall" data-value="535">£535</strong></div><div class="barrow"><div class="fill" style="width:78%"></div></div></div></div></div>
+  <aside class="panel bonus"><h2>Bonus credit performance</h2><p style="color:var(--muted);line-height:1.55">The £5 → £6 offer is lifting average customer spend and gives operators a simple promotional lever without changing machine pricing.</p><div class="notice"><b>Most selected:</b> Pay £5, receive £6 total wash credit.<br><b>Estimated uplift:</b> +£472 today across demo sites.</div><div class="recommendation"><small>Recommended pack</small><strong>Keep £5 → £6 live</strong><span>Based on today’s sales, this pack is converting best between 15:00 and 19:00.</span><div class="recommendation-actions"><button>Apply recommendation</button><button class="secondary">Automatic</button></div></div></aside></section>
+  <section class="grid" style="margin-top:14px"><div class="panel"><h2>Recent transactions</h2><table class="table"><thead><tr><th>Time</th><th>Site</th><th>Bay</th><th>Amount</th><th>Status</th></tr></thead><tbody id="transactionRows"><tr><td>14:42</td><td>Birmingham</td><td>Bay 3</td><td>£5 → £6</td><td class="ok">Started</td></tr><tr><td>14:39</td><td>Wolverhampton</td><td>Bay 4</td><td>£10</td><td class="ok">Started</td></tr><tr><td>14:31</td><td>Coventry</td><td>Bay 1</td><td>£7</td><td class="warn">Pending</td></tr><tr><td>14:25</td><td>Walsall</td><td>Bay 2</td><td>£5 → £6</td><td class="ok">Started</td></tr><tr><td>14:18</td><td>Derby</td><td>Bay 5</td><td>£3</td><td class="failed">Refund needed</td></tr></tbody></table></div>
+  <aside class="panel"><h2>Busiest hours</h2><div class="hours"><div class="hour"><span>09:00</span><div><i style="width:45%"></i></div><b>42</b></div><div class="hour"><span>12:00</span><div><i style="width:72%"></i></div><b>78</b></div><div class="hour"><span>15:00</span><div><i style="width:92%"></i></div><b>106</b></div><div class="hour"><span>18:00</span><div><i style="width:100%"></i></div><b>119</b></div><div class="hour"><span>21:00</span><div><i style="width:57%"></i></div><b>61</b></div></div><div class="notice">Staff view can be restricted to selected sites, while directors see every location.</div></aside></section>
+</main>
+<div class="login" id="login"><div class="login-card"><h2>Demo login</h2><p>Use this screen to make the demo feel like a real operator dashboard.</p><input id="pin" placeholder="Enter PIN" value="2026"/><button onclick="openDashboard()">Open dashboard</button><div class="hint">Demo PIN: 2026</div></div></div>
+
+<script>
+  const liveMetrics = Array.from(document.querySelectorAll('.live-number')).map((element) => ({
+    element,
+    value: Number(element.dataset.value || 0),
+    decimals: Number(element.dataset.decimals || 0),
+    prefix: element.dataset.prefix || '',
+    started: false
+  }));
+
+  function formatMetric(metric){
+    const value = metric.decimals ? metric.value.toFixed(metric.decimals) : Math.round(metric.value).toLocaleString('en-GB');
+    metric.element.textContent = metric.prefix + value;
+  }
+
+  function countToMetric(metric){
+    const target = metric.value;
+    const duration = 1200 + Math.random() * 500;
+    const start = performance.now();
+    metric.value = 0;
+    function frame(now){
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      metric.value = target * eased;
+      formatMetric(metric);
+      if(progress < 1) requestAnimationFrame(frame);
+      else {
+        metric.value = target;
+        formatMetric(metric);
+        metric.started = true;
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function startLiveTicker(){
+    liveMetrics.forEach(countToMetric);
+    const sites = ['Birmingham', 'Wolverhampton', 'Coventry', 'Walsall'];
+    const amounts = [3, 5, 5, 7, 10];
+    const siteRevenue = Array.from(document.querySelectorAll('.site-revenue')).reduce((map, element) => {
+      map[element.dataset.site] = { element, value: Number(element.dataset.value || 0) };
+      return map;
+    }, {});
+
+    function pulse(element){
+      element.animate([
+        { transform: 'translateY(0)', color: '#f9fbff' },
+        { transform: 'translateY(-3px)', color: '#00f09a' },
+        { transform: 'translateY(0)', color: '#f9fbff' }
+      ], { duration: 520, easing: 'ease-out' });
+    }
+
+    function addTransactionRow(site, amount, isBonus){
+      const rows = document.getElementById('transactionRows');
+      if(!rows) return;
+      const bay = Math.floor(Math.random() * 6) + 1;
+      const now = new Date();
+      const time = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      const row = document.createElement('tr');
+      row.innerHTML = `<td>${time}</td><td>${site}</td><td>Bay ${bay}</td><td>${isBonus ? '£5 → £6' : '£' + amount}</td><td class="ok">Started</td>`;
+      rows.prepend(row);
+      while(rows.children.length > 5) rows.removeChild(rows.lastElementChild);
+      row.animate([{ background: 'rgba(0,240,154,.22)' }, { background: 'transparent' }], { duration: 1200, easing: 'ease-out' });
+    }
+
+    function updateProjection(){
+      const projected = Math.round(liveMetrics[0].value * 1.45);
+      const target = document.getElementById('projectedRevenue');
+      const note = document.getElementById('projectedNote');
+      if(!target) return;
+      target.textContent = '£' + projected.toLocaleString('en-GB');
+      if(note) note.textContent = projected >= 4200 ? 'Likely to beat yesterday' : 'Based on current pace';
+      pulse(target);
+    }
+
+    function simulatePayment(){
+      const site = sites[Math.floor(Math.random() * sites.length)];
+      const amount = amounts[Math.floor(Math.random() * amounts.length)];
+      const isBonus = amount === 5 && Math.random() > 0.25;
+      liveMetrics[0].value += amount;
+      liveMetrics[1].value += 1;
+      if(isBonus) liveMetrics[2].value += 1;
+      [liveMetrics[0], liveMetrics[1], isBonus ? liveMetrics[2] : null].filter(Boolean).forEach((metric) => {
+        formatMetric(metric);
+        pulse(metric.element);
+      });
+      const siteMetric = siteRevenue[site];
+      if(siteMetric){
+        siteMetric.value += amount;
+        siteMetric.element.textContent = '£' + Math.round(siteMetric.value).toLocaleString('en-GB');
+        pulse(siteMetric.element);
+      }
+      updateProjection();
+      addTransactionRow(site, amount, isBonus);
+    }
+
+    function scheduleNextTick(){
+      const delay = 1000 + Math.random() * 19000;
+      setTimeout(() => {
+        simulatePayment();
+        scheduleNextTick();
+      }, delay);
+    }
+    scheduleNextTick();
+  }
+
+  function openDashboard(){
+    document.getElementById('login').classList.add('hidden');
+    if(!window.__liveMetricsStarted){
+      window.__liveMetricsStarted = true;
+      startLiveTicker();
+    }
+  }
+</script>
+</body>
+</html>
