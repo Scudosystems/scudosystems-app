@@ -13,8 +13,57 @@
     <header><div class="brand"><b>EV QR Charging Demo</b><span>Contactless charging payments and operator reporting</span></div><div class="pill">Demo only</div></header>
     <section class="grid">
       <div class="hero"><div class="eyebrow">Pay-as-you-go EV charging</div><h1>Scan. Pay. Start charging.</h1><div class="steps"><div class="step"><b>1. Scan charger</b>Connector 2 selected</div><div class="step"><b>2. Choose amount</b>kWh, time or fixed top-up</div><div class="step"><b>3. Start session</b>Payment and charging linked</div></div></div>
-      <aside class="phone"><div class="screen"><div class="charger"></div><div class="body"><div class="selected"><div><small>Demo Charging Hub</small><strong>Connector 2 selected</strong></div><span class="status">Available</span></div><div class="mode-tabs"><button class="active">Fixed top-up</button><button>kWh</button><button>Time</button></div><div class="tariffs"><button class="tariff"><b>£5 → £6</b><small>Includes £1 bonus charge credit</small></button><button class="tariff smart active"><b>£10 → £12</b><small>Includes £2 bonus charge credit</small></button><button class="tariff"><b>£15</b><small>Longer session</small></button></div><div class="note"><b>Flexible charging:</b> Drivers can choose fixed top-up, kWh amount or time-based charging. Current offer: pay £10 and receive £12 total charging credit.</div><button class="pay" onclick="document.body.classList.add('paid')">Pay £10.00 securely</button><div class="methods"><span class="method">Apple Pay</span><span class="method">Google Pay</span><span class="method">Card</span></div><div class="success">Payment approved. Connector 2 is ready to start charging.</div></div></div></aside>
+      <aside class="phone"><div class="screen"><div class="charger"></div><div class="body"><div class="selected"><div><small>Demo Charging Hub</small><strong>Connector 2 selected</strong></div><span class="status">Available</span></div><div class="mode-tabs"><button class="active" data-mode="topup">Fixed top-up</button><button data-mode="kwh">kWh</button><button data-mode="time">Time</button></div><div class="tariffs" id="tariffs"></div><div class="note" id="modeNote"></div><button class="pay" id="payButton" onclick="document.body.classList.add('paid')">Pay £10.00 securely</button><div class="methods"><span class="method">Apple Pay</span><span class="method">Google Pay</span><span class="method">Card</span></div><div class="success">Payment approved. Connector 2 is ready to start charging.</div></div></div></aside>
     </section>
   </main>
+
+<script>
+  const modes = {
+    topup: {
+      pay: 'Pay £10.00 securely',
+      note: '<b>Flexible charging:</b> Drivers can choose fixed top-up, kWh amount or time-based charging. Current offer: pay £10 and receive £12 total charging credit.',
+      options: [
+        ['£5 → £6', 'Includes £1 bonus charge credit', false],
+        ['£10 → £12', 'Includes £2 bonus charge credit', true],
+        ['£15', 'Longer session', false]
+      ]
+    },
+    kwh: {
+      pay: 'Pay for 20 kWh securely',
+      note: '<b>kWh charging:</b> Drivers choose the energy amount they want. Useful when they know how much range they need.',
+      options: [
+        ['10 kWh', 'Quick range top-up', false],
+        ['20 kWh', 'Recommended today', true],
+        ['40 kWh', 'Longer charge session', false]
+      ]
+    },
+    time: {
+      pay: 'Pay for 60 minutes securely',
+      note: '<b>Time charging:</b> Drivers choose a charging duration. Useful for car parks, gyms, hotels and destination charging.',
+      options: [
+        ['30 mins', 'Short stay charging', false],
+        ['60 mins', 'Most selected', true],
+        ['120 mins', 'Long stay charging', false]
+      ]
+    }
+  };
+
+  function renderMode(mode){
+    const config = modes[mode];
+    document.querySelectorAll('.mode-tabs button').forEach((button) => {
+      button.classList.toggle('active', button.dataset.mode === mode);
+    });
+    document.getElementById('tariffs').innerHTML = config.options.map(([title, subtitle, active]) =>
+      `<button class="tariff ${active ? 'smart active' : ''}"><b>${title}</b><small>${subtitle}</small></button>`
+    ).join('');
+    document.getElementById('modeNote').innerHTML = config.note;
+    document.getElementById('payButton').textContent = config.pay;
+  }
+
+  document.querySelectorAll('.mode-tabs button').forEach((button) => {
+    button.addEventListener('click', () => renderMode(button.dataset.mode));
+  });
+  renderMode('topup');
+</script>
 </body>
 </html>
