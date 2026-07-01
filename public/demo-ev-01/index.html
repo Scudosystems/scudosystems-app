@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>EV QR Charging Payment Demo</title>
   <style>
-    :root{--ink:#081827;--muted:#607084;--blue:#1467ff;--cyan:#18d5ff;--green:#10d486;--lime:#c6ff35;--bg:#f4f9ff;--card:#fff;--line:#dbe8f5;--dark:#07111f;--shadow:0 24px 70px rgba(16,75,130,.16);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 15% 0,rgba(24,213,255,.28),transparent 32%),linear-gradient(180deg,#f4f9ff,#fff);color:var(--ink)}.wrap{width:min(1120px,92vw);margin:auto;padding:26px 0 58px}header{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:34px}.brand b{font-size:20px}.brand span{display:block;color:var(--muted);font-size:13px;margin-top:3px}.pill{background:#eaf5ff;border:1px solid var(--line);color:#0b58a2;border-radius:999px;padding:10px 14px;font-weight:900}.grid{display:grid;grid-template-columns:1.05fr .95fr;gap:30px;align-items:start}.hero{padding-top:26px}.eyebrow{font-weight:950;text-transform:uppercase;letter-spacing:.16em;color:var(--blue);font-size:12px}.hero h1{font-size:clamp(44px,7vw,82px);line-height:.92;letter-spacing:-.06em;margin:14px 0 17px}.hero p{color:var(--muted);font-size:18px;line-height:1.55;max-width:630px}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:26px}.step{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:0 12px 35px rgba(16,75,130,.08)}.step b{display:block;color:var(--blue);margin-bottom:5px}.phone{background:#0a1424;border-radius:36px;padding:16px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.65)}.screen{background:#f8fbff;border-radius:26px;overflow:hidden}.charger{height:170px;background:radial-gradient(circle at 25% 28%,rgba(198,255,53,.95) 0 6px,transparent 7px),radial-gradient(circle at 75% 30%,rgba(24,213,255,.9) 0 7px,transparent 8px),linear-gradient(135deg,#07111f,#10336a 58%,#1467ff);position:relative;overflow:hidden}.charger:before{content:'EV CHARGE';position:absolute;left:22px;bottom:24px;color:white;font-size:30px;font-weight:950;letter-spacing:-.04em}.charger:after{content:'';position:absolute;right:28px;top:30px;width:74px;height:110px;border:9px solid rgba(255,255,255,.28);border-radius:20px}.body{padding:20px;color:#122033}.selected{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}.selected small{display:block;color:#66748a;font-weight:800;margin-bottom:4px}.selected strong{display:block;font-size:21px;line-height:1.12}.status{font-size:12px;font-weight:950;color:#086c47;background:#dcfff0;padding:8px 10px;border-radius:999px}.mode-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}.mode-tabs button{border:1px solid #dce6f2;background:#fff;border-radius:13px;padding:10px 8px;font-weight:900;color:#607084}.mode-tabs button.active{background:#eaf5ff;border-color:var(--blue);color:var(--blue)}.tariffs{display:grid;gap:10px;margin:15px 0}.tariff{border:2px solid #dce6f2;border-radius:18px;background:white;padding:14px;text-align:left;cursor:pointer;transition:.18s}.tariff:hover,.tariff.active{border-color:var(--blue);box-shadow:0 12px 26px rgba(20,103,255,.14);transform:translateY(-2px)}.tariff.active{background:#eef6ff}.tariff b{font-size:21px;display:block}.tariff small{color:#5f6e82;font-weight:750}.smart{border-color:var(--green);box-shadow:0 0 0 4px rgba(16,212,134,.13);animation:pulse 1.7s ease-in-out infinite}@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.018)}}.note{background:#07111f;color:white;border:1px solid rgba(20,103,255,.25);border-radius:18px;padding:14px;line-height:1.45}.note b{color:var(--lime)}.pay{width:100%;border:0;border-radius:18px;background:linear-gradient(135deg,var(--blue),#18a8ff);color:white;font-weight:950;font-size:18px;padding:16px;margin-top:15px;cursor:pointer;box-shadow:0 14px 32px rgba(20,103,255,.25)}.methods{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.method{background:white;border:1px solid #dce6f2;border-radius:12px;padding:9px 11px;font-weight:900}.success{display:none;margin-top:14px;background:#eafff6;color:#07432f;border:1px solid #80f1c7;border-radius:16px;padding:14px;font-weight:850}body.paid .success{display:block}@media(max-width:860px){.grid{grid-template-columns:1fr}.steps{grid-template-columns:1fr}.phone{max-width:480px;margin:auto}header{align-items:flex-start;flex-direction:column}}
+    :root{--ink:#081827;--muted:#607084;--blue:#1467ff;--cyan:#18d5ff;--green:#10d486;--lime:#c6ff35;--bg:#f4f9ff;--card:#fff;--line:#dbe8f5;--dark:#07111f;--shadow:0 24px 70px rgba(16,75,130,.16);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 15% 0,rgba(24,213,255,.28),transparent 32%),linear-gradient(180deg,#f4f9ff,#fff);color:var(--ink)}.wrap{width:min(1120px,92vw);margin:auto;padding:26px 0 58px}header{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:34px}.brand b{font-size:20px}.brand span{display:block;color:var(--muted);font-size:13px;margin-top:3px}.pill{background:#eaf5ff;border:1px solid var(--line);color:#0b58a2;border-radius:999px;padding:10px 14px;font-weight:900}.grid{display:grid;grid-template-columns:1.05fr .95fr;gap:30px;align-items:start}.hero{padding-top:26px}.eyebrow{font-weight:950;text-transform:uppercase;letter-spacing:.16em;color:var(--blue);font-size:12px}.hero h1{font-size:clamp(44px,7vw,82px);line-height:.92;letter-spacing:-.06em;margin:14px 0 17px}.hero p{color:var(--muted);font-size:18px;line-height:1.55;max-width:630px}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:26px}.step{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:0 12px 35px rgba(16,75,130,.08)}.step b{display:block;color:var(--blue);margin-bottom:5px}.phone{background:#0a1424;border-radius:36px;padding:16px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.65)}.screen{background:#f8fbff;border-radius:26px;overflow:hidden}.charger{height:170px;background:radial-gradient(circle at 25% 28%,rgba(198,255,53,.95) 0 6px,transparent 7px),radial-gradient(circle at 75% 30%,rgba(24,213,255,.9) 0 7px,transparent 8px),linear-gradient(135deg,#07111f,#10336a 58%,#1467ff);position:relative;overflow:hidden}.charger:before{content:'EV CHARGE';position:absolute;left:22px;bottom:24px;color:white;font-size:30px;font-weight:950;letter-spacing:-.04em}.charger:after{content:'';position:absolute;right:28px;top:30px;width:74px;height:110px;border:9px solid rgba(255,255,255,.28);border-radius:20px}.charge-line{position:absolute;left:-40%;right:auto;bottom:0;width:40%;height:4px;background:linear-gradient(90deg,transparent,var(--lime),var(--cyan));animation:chargeLine 2s linear infinite}@keyframes chargeLine{0%{transform:translateX(0)}100%{transform:translateX(350%)}}.body{padding:20px;color:#122033}.selected{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}.selected small{display:block;color:#66748a;font-weight:800;margin-bottom:4px}.selected strong{display:block;font-size:21px;line-height:1.12}.status{font-size:12px;font-weight:950;color:#086c47;background:#dcfff0;padding:8px 10px;border-radius:999px}.mode-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}.mode-tabs button{border:1px solid #dce6f2;background:#fff;border-radius:13px;padding:10px 8px;font-weight:900;color:#607084}.mode-tabs button.active{background:#eaf5ff;border-color:var(--blue);color:var(--blue)}.tariffs{display:grid;gap:10px;margin:15px 0}.tariff{border:2px solid #dce6f2;border-radius:18px;background:white;padding:14px;text-align:left;cursor:pointer;transition:.18s}.tariff:hover,.tariff.active{border-color:var(--blue);box-shadow:0 12px 26px rgba(20,103,255,.14);transform:translateY(-2px)}.tariff.active{background:#eef6ff}.tariff b{font-size:21px;display:block}.tariff small{color:#5f6e82;font-weight:750}.smart{border-color:var(--green);box-shadow:0 0 0 4px rgba(16,212,134,.13);animation:pulse 1.7s ease-in-out infinite}@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.018)}}.estimate{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.estimate-card{background:white;border:1px solid #dce6f2;border-radius:18px;padding:13px}.estimate-card small{display:block;color:#607084;font-weight:850;margin-bottom:5px}.estimate-card b{display:block;font-size:20px}.battery{background:#07111f;border-radius:18px;padding:14px;color:white;margin:12px 0;overflow:hidden}.battery-top{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}.battery-shell{height:18px;border:2px solid rgba(255,255,255,.55);border-radius:999px;padding:2px;position:relative}.battery-shell:after{content:'';position:absolute;right:-7px;top:4px;width:5px;height:8px;border-radius:2px;background:rgba(255,255,255,.55)}.battery-fill{height:100%;width:64%;border-radius:999px;background:linear-gradient(90deg,var(--green),var(--lime));box-shadow:0 0 18px rgba(198,255,53,.35);transition:width .25s ease}.note{background:#07111f;color:white;border:1px solid rgba(20,103,255,.25);border-radius:18px;padding:14px;line-height:1.45}.note b{color:var(--lime)}.pay{width:100%;border:0;border-radius:18px;background:linear-gradient(135deg,var(--blue),#18a8ff);color:white;font-weight:950;font-size:18px;padding:16px;margin-top:15px;cursor:pointer;box-shadow:0 14px 32px rgba(20,103,255,.25)}.receipt{background:white;border:1px solid #dce6f2;border-radius:18px;padding:13px;margin-top:12px}.receipt-row{display:flex;justify-content:space-between;gap:12px;color:#607084;font-weight:750;padding:5px 0}.receipt-row b{color:#122033}.methods{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.method{background:white;border:1px solid #dce6f2;border-radius:12px;padding:9px 11px;font-weight:900}.success{display:none;margin-top:14px;background:#eafff6;color:#07432f;border:1px solid #80f1c7;border-radius:16px;padding:14px;font-weight:850}body.paid .success{display:block}@media(max-width:860px){.grid{grid-template-columns:1fr}.steps{grid-template-columns:1fr}.phone{max-width:480px;margin:auto}header{align-items:flex-start;flex-direction:column}}
   </style>
 </head>
 <body>
@@ -13,7 +13,7 @@
     <header><div class="brand"><b>EV QR Charging Demo</b><span>Contactless charging payments and operator reporting</span></div><div class="pill">Demo only</div></header>
     <section class="grid">
       <div class="hero"><div class="eyebrow">Pay-as-you-go EV charging</div><h1>Scan. Pay. Start charging.</h1><div class="steps"><div class="step"><b>1. Scan charger</b>Connector 2 selected</div><div class="step"><b>2. Choose amount</b>kWh, time or fixed top-up</div><div class="step"><b>3. Start session</b>Payment and charging linked</div></div></div>
-      <aside class="phone"><div class="screen"><div class="charger"></div><div class="body"><div class="selected"><div><small>Demo Charging Hub</small><strong>Connector 2 selected</strong></div><span class="status">Available</span></div><div class="mode-tabs"><button class="active" data-mode="topup">Fixed top-up</button><button data-mode="kwh">kWh</button><button data-mode="time">Time</button></div><div class="tariffs" id="tariffs"></div><div class="note" id="modeNote"></div><button class="pay" id="payButton" onclick="document.body.classList.add('paid')">Pay £10.00 securely</button><div class="methods"><span class="method">Apple Pay</span><span class="method">Google Pay</span><span class="method">Card</span></div><div class="success">Payment approved. Connector 2 is ready to start charging.</div></div></div></aside>
+      <aside class="phone"><div class="screen"><div class="charger"><div class="charge-line"></div></div><div class="body"><div class="selected"><div><small>Demo Charging Hub</small><strong>Connector 2 selected</strong></div><span class="status">Available</span></div><div class="mode-tabs"><button class="active" data-mode="topup">Fixed top-up</button><button data-mode="kwh">kWh</button><button data-mode="time">Time</button></div><div class="tariffs" id="tariffs"></div><div class="estimate"><div class="estimate-card"><small>Estimated range</small><b id="rangeEstimate">+48 miles</b></div><div class="estimate-card"><small>CO₂ saved</small><b id="co2Estimate">6.2kg</b></div></div><div class="battery"><div class="battery-top"><b>Charge preview</b><span id="batteryLabel">64%</span></div><div class="battery-shell"><div class="battery-fill" id="batteryFill"></div></div></div><div class="note" id="modeNote"></div><div class="receipt"><div class="receipt-row"><span>Connector</span><b>2 • 22kW AC</b></div><div class="receipt-row"><span>Selected</span><b id="receiptSelected">£10 → £12</b></div><div class="receipt-row"><span>Estimated</span><b id="receiptEstimate">16 kWh / +48 miles</b></div></div><button class="pay" id="payButton" onclick="document.body.classList.add('paid')">Pay £10.00 securely</button><div class="methods"><span class="method">Apple Pay</span><span class="method">Google Pay</span><span class="method">Card</span></div><div class="success">Payment approved. Connector 2 is ready to start charging.</div></div></div></aside>
     </section>
   </main>
 
@@ -23,41 +23,61 @@
       pay: 'Pay £10.00 securely',
       note: '<b>Flexible charging:</b> Drivers can choose fixed top-up, kWh amount or time-based charging. Current offer: pay £10 and receive £12 total charging credit.',
       options: [
-        ['£5 → £6', 'Includes £1 bonus charge credit', false],
-        ['£10 → £12', 'Includes £2 bonus charge credit', true],
-        ['£15', 'Longer session', false]
+        ['£5 → £6', 'Includes £1 bonus charge credit', false, '+24 miles', '3.1kg', '42%', '8 kWh / +24 miles'],
+        ['£10 → £12', 'Includes £2 bonus charge credit', true, '+48 miles', '6.2kg', '64%', '16 kWh / +48 miles'],
+        ['£15', 'Longer session', false, '+62 miles', '8.1kg', '78%', '21 kWh / +62 miles']
       ]
     },
     kwh: {
       pay: 'Pay for 20 kWh securely',
       note: '<b>kWh charging:</b> Drivers choose the energy amount they want. Useful when they know how much range they need.',
       options: [
-        ['10 kWh', 'Quick range top-up', false],
-        ['20 kWh', 'Recommended today', true],
-        ['40 kWh', 'Longer charge session', false]
+        ['10 kWh', 'Quick range top-up', false, '+30 miles', '3.9kg', '46%', '10 kWh / +30 miles'],
+        ['20 kWh', 'Recommended today', true, '+60 miles', '7.8kg', '72%', '20 kWh / +60 miles'],
+        ['40 kWh', 'Longer charge session', false, '+120 miles', '15.6kg', '96%', '40 kWh / +120 miles']
       ]
     },
     time: {
       pay: 'Pay for 60 minutes securely',
       note: '<b>Time charging:</b> Drivers choose a charging duration. Useful for car parks, gyms, hotels and destination charging.',
       options: [
-        ['30 mins', 'Short stay charging', false],
-        ['60 mins', 'Most selected', true],
-        ['120 mins', 'Long stay charging', false]
+        ['30 mins', 'Short stay charging', false, '+16 miles', '2.1kg', '36%', '5.5 kWh / +16 miles'],
+        ['60 mins', 'Most selected', true, '+33 miles', '4.3kg', '58%', '11 kWh / +33 miles'],
+        ['120 mins', 'Long stay charging', false, '+66 miles', '8.6kg', '84%', '22 kWh / +66 miles']
       ]
     }
   };
+
+
+  function updateEstimate(option){
+    const [title, , , range, co2, battery, estimate] = option;
+    document.getElementById('rangeEstimate').textContent = range;
+    document.getElementById('co2Estimate').textContent = co2;
+    document.getElementById('batteryLabel').textContent = battery;
+    document.getElementById('batteryFill').style.width = battery;
+    document.getElementById('receiptSelected').textContent = title;
+    document.getElementById('receiptEstimate').textContent = estimate;
+  }
 
   function renderMode(mode){
     const config = modes[mode];
     document.querySelectorAll('.mode-tabs button').forEach((button) => {
       button.classList.toggle('active', button.dataset.mode === mode);
     });
-    document.getElementById('tariffs').innerHTML = config.options.map(([title, subtitle, active]) =>
-      `<button class="tariff ${active ? 'smart active' : ''}"><b>${title}</b><small>${subtitle}</small></button>`
+    document.getElementById('tariffs').innerHTML = config.options.map(([title, subtitle, active], index) =>
+      `<button class="tariff ${active ? 'smart active' : ''}" data-index="${index}"><b>${title}</b><small>${subtitle}</small></button>`
     ).join('');
     document.getElementById('modeNote').innerHTML = config.note;
     document.getElementById('payButton').textContent = config.pay;
+    const selectedIndex = Math.max(0, config.options.findIndex((option) => option[2]));
+    updateEstimate(config.options[selectedIndex]);
+    document.querySelectorAll('.tariff').forEach((tariff) => {
+      tariff.addEventListener('click', () => {
+        document.querySelectorAll('.tariff').forEach((item) => item.classList.remove('active', 'smart'));
+        tariff.classList.add('active', 'smart');
+        updateEstimate(config.options[Number(tariff.dataset.index)]);
+      });
+    });
   }
 
   document.querySelectorAll('.mode-tabs button').forEach((button) => {
