@@ -279,3 +279,26 @@
   100% { transform: scale(1.8); opacity: 0; }
 }
 .ping-once { animation: ping-once 1.2s ease-out; }
+
+/* ─── ScudoSystems marketing experience ───────────────────────── */
+.scudo-grid {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.07) 1px, transparent 1px);
+  background-size: 52px 52px;
+  mask-image: linear-gradient(to bottom, black 0%, transparent 86%);
+}
+.scudo-orb { filter: saturate(120%); animation: scudo-float 12s ease-in-out infinite; }
+.scudo-orb-one { background: rgba(34, 211, 238, 0.24); }
+.scudo-orb-two { background: rgba(79, 70, 229, 0.25); animation-delay: -5s; }
+.scudo-orb-three { background: rgba(6, 182, 212, 0.18); animation-delay: -8s; }
+.scudo-gradient-text { background: linear-gradient(110deg, #ffffff 15%, #80e6ff 50%, #8b9cff 90%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.scudo-dashboard-glow { background: radial-gradient(circle, rgba(34, 211, 238, 0.3), rgba(79, 70, 229, 0.16) 45%, transparent 72%); }
+.scudo-dashboard-card { animation: scudo-card-breathe 6s ease-in-out infinite; }
+.scudo-scan-line { animation: scudo-scan 4.6s ease-in-out infinite; }
+.scudo-chart-bar { transform-origin: bottom; animation: scudo-chart-rise 850ms cubic-bezier(.2,.8,.2,1) both; }
+@keyframes scudo-float { 0%, 100% { transform: translate3d(0, 0, 0) scale(1); } 50% { transform: translate3d(28px, -22px, 0) scale(1.08); } }
+@keyframes scudo-card-breathe { 0%, 100% { transform: perspective(1200px) rotateY(-1deg) rotateX(1deg); } 50% { transform: perspective(1200px) rotateY(1deg) rotateX(-1deg) translateY(-4px); } }
+@keyframes scudo-scan { 0%, 100% { transform: translateY(-100%); opacity: 0; } 18%, 75% { opacity: 1; } 90% { transform: translateY(520px); opacity: 0; } }
+@keyframes scudo-chart-rise { from { transform: scaleY(.18); opacity: .25; } to { transform: scaleY(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .scudo-orb, .scudo-dashboard-card, .scudo-scan-line, .scudo-chart-bar { animation: none !important; } }
