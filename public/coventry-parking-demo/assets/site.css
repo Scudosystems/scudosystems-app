@@ -169,4 +169,4 @@ body { background: #0b0d12; }
 .intro .eyebrow{color:#9cdefe}.intro h1 span{color:#4ab4f4}.stat-band{background:rgba(40,104,232,.38);border-color:rgba(74,180,244,.45)}
 .payment-card{border-color:rgba(74,180,244,.84)}.payment-card:before,.checkout{background:linear-gradient(110deg,#2868e8,#4ab4f4,#2868e8);color:#fff}.duration.active{background:#123f71;border-color:#4ab4f4}
 .dash-page{background:radial-gradient(circle at 8% 0%,rgba(40,104,232,.32),transparent 27%),#061525}.dash-top{border-bottom-color:#4ab4f4}.dash-hero{background:linear-gradient(115deg,#082a4c,#123f71 55%,#2868e8)}.range-tabs button.active,.export{background:#123f71;border-color:#4ab4f4}.fill{background:linear-gradient(90deg,#2868e8,#4ab4f4)}.bar{background:linear-gradient(#4ab4f4,#2868e8)}.panel-tag{background:rgba(74,180,244,.15);color:#bfe7ff}.alert{background:rgba(18,63,113,.48);border-color:rgba(74,180,244,.32)}
-.dash-hero p{color:#fff}
+.dash-hero p{color:#fff}.hero-meta span,.hero-meta strong{color:#000}
