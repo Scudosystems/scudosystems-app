@@ -116,7 +116,7 @@ body { background: #0b0d12; }
 .demo-ribbon { color:#cdeaff; border-bottom-color:rgba(149,191,229,.42); }
 .brandbar { background:linear-gradient(115deg,#470622,#670e36 50%,#95bfe5); }
 .brand,.brand-mark { color:#fff; }
-.tariff-badge { color:#fff; }
+.tariff-badge { color:#fff !important; }
 .payment-layout { background:radial-gradient(circle at 10% 15%,rgba(103,14,54,.48),transparent 27%),radial-gradient(circle at 90% 75%,rgba(149,191,229,.18),transparent 32%),#0d1424; }
 .intro .eyebrow { color:#a9d7ff; }
 .intro h1 span { color:#95bfe5; }
