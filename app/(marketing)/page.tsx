@@ -16,7 +16,7 @@ import {
   Zap,
 } from 'lucide-react'
 
-const CONTACT_EMAIL = 'scudosystems@protonemail.com'
+const CONTACT_EMAIL = 'scudosystems-team@proton.me'
 
 const focusAreas = [
   { icon: Droplets, title: 'Car wash', text: 'Payments, wash-bay insights and cleaner customer journeys.' },
