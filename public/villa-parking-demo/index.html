@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Villa Park Parking | Scudo Systems concept</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/villa-parking-demo/assets/site.css?v=20261108">
+  <script defer src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js"></script>
+  <script defer src="/villa-parking-demo/assets/stadium-theme.js"></script>
+</head>
+<body>
+  <div class="demo-ribbon">Scudo Systems proposal preview · No real payment is taken</div>
+  <header class="brandbar">
+    <a class="brand" href="./" aria-label="Stadium parking">
+      <span class="brand-mark" data-stadium-mark>V</span>
+      <span class="brand-name"><span data-stadium-name>VILLA PARK</span><small>PARKING</small></span>
+    </a>
+    <span class="brand-note">Fast entry · Simple payment</span>
+  </header>
+
+  <main class="payment-layout">
+    <section class="intro">
+      <div class="eyebrow">Matchday & event parking</div>
+      <h1>PARK.<br><span>PAY.</span><br>ENJOY THE DAY.</h1>
+      <p class="intro-copy">A simple parking payment journey for stadium visitors. Scan, enter your registration, choose your stay and pay in seconds — no app download needed.</p>
+      <div class="trust-row">
+        <span class="trust"><b>●</b> Secure card checkout</span>
+        <span class="trust">No account needed</span>
+        <span class="trust">Registration protected</span>
+      </div>
+      <div class="stat-band" aria-label="Parking benefits">
+        <div class="stat"><strong>£4.00</strong><span>Simple entry tariff</span></div>
+        <div class="stat"><strong>30 sec</strong><span>Typical checkout</span></div>
+        <div class="stat"><strong>0 apps</strong><span>Nothing to download</span></div>
+      </div>
+    </section>
+
+    <section class="payment-card" aria-label="Parking payment">
+      <div class="card-top">
+        <div><div class="eyebrow">Pay for parking</div><h2>Welcome to <span data-stadium-name>VILLA PARK</span></h2></div>
+        <span class="availability">Parking open</span>
+      </div>
+      <div class="location">
+        <div><span class="location-label">Selected parking area</span><strong data-stadium-location>Stadium car park</strong></div>
+        <span class="zone" data-stadium-zone>ZONE VP</span>
+      </div>
+      <div class="vehicle-section">
+        <label class="label" for="registration">Vehicle registration</label>
+        <input id="registration" class="reg-input" maxlength="8" placeholder="AB12 CDE" autocomplete="off">
+      </div>
+      <div class="tariff">
+        <div class="tariff-head">
+          <div><small>Standard parking</small><div class="tariff-price" id="tariffPrice">£4.00</div><div class="tariff-sub" id="tariffText">Up to 4 hours</div></div>
+          <span class="tariff-badge">Best value</span>
+        </div>
+        <div class="duration-grid" id="durationGrid">
+          <button class="duration" type="button" data-price="2" data-text="Up to 2 hours">2 hours<br>£2</button>
+          <button class="duration active" type="button" data-price="4" data-text="Up to 4 hours">4 hours<br>£4</button>
+          <button class="duration" type="button" data-price="6" data-text="All-day parking">All day<br>£6</button>
+        </div>
+      </div>
+      <button id="checkout" class="checkout" type="button">Pay £4.00 securely</button>
+      <p class="payment-note"><b>Demo checkout:</b> in a live version, Apple Pay, Google Pay and card checkout connect here.</p>
+      <div class="success" id="success" role="status"><strong>Parking payment approved</strong><p id="successText"></p></div>
+    </section>
+  </main>
+  <footer class="footer-note">Concept interface prepared by Scudo Systems for discussion only. Stadium names are used solely to identify the proposal context; this is not an official club service.</footer>
+  <script>
+    window.addEventListener('load', () => {
+      if (window.anime) {
+        anime.timeline({easing:'easeOutExpo'}).add({targets:'.brandbar',opacity:[0,1],translateY:[-12,0],duration:520}).add({targets:'.intro > *',opacity:[0,1],translateY:[18,0],delay:anime.stagger(70),duration:650},'-=330').add({targets:'.payment-card',opacity:[0,1],translateY:[28,0],scale:[.98,1],duration:760},'-=600');
+      }
+    });
+    const price = document.getElementById('tariffPrice');
+    const text = document.getElementById('tariffText');
+    const checkout = document.getElementById('checkout');
+    const registration = document.getElementById('registration');
+    const success = document.getElementById('success');
+    let amount = 4;
+    document.querySelectorAll('.duration').forEach(button => button.addEventListener('click', () => {
+      document.querySelectorAll('.duration').forEach(item => item.classList.remove('active'));
+      button.classList.add('active'); amount = Number(button.dataset.price);
+      price.textContent = `£${amount.toFixed(2)}`; text.textContent = button.dataset.text;
+      checkout.textContent = `Pay £${amount.toFixed(2)} securely`; success.classList.remove('show');
+    }));
+    registration.addEventListener('input', () => registration.value = registration.value.toUpperCase());
+    checkout.addEventListener('click', () => {
+      const registrationText = registration.value.trim();
+      if (!registrationText) { registration.focus(); registration.setAttribute('aria-invalid', 'true'); return; }
+      registration.removeAttribute('aria-invalid'); checkout.disabled = true; checkout.textContent = 'Confirming parking…';
+      if(window.anime) anime({targets:checkout,scale:[1,.96,1],duration:520,easing:'easeOutQuad'});
+      setTimeout(() => { checkout.disabled = false; checkout.textContent = `Pay £${amount.toFixed(2)} securely`; document.getElementById('successText').textContent = `${registrationText} is covered for ${text.textContent.toLowerCase()}. Demo reference: M-${Math.floor(100000 + Math.random()*899999)}.`; success.classList.add('show'); if(window.anime) anime({targets:success,opacity:[0,1],translateY:[12,0],duration:500,easing:'easeOutExpo'}); }, 650);
+    });
+  </script>
+</body>
+</html>
