@@ -61,8 +61,8 @@ export default function ContactPage() {
                 <ContactDetail
                   icon={Mail}
                   label="Email"
-                  value="hello@scudosystems.com"
-                  href="mailto:hello@scudosystems.com"
+                  value="scudosystems-team@proton.me"
+                  href="mailto:scudosystems-team@proton.me"
                 />
                 <ContactDetail
                   icon={Building2}
@@ -89,7 +89,7 @@ export default function ContactPage() {
 
             <div>
               <p className="text-xs text-dark/30 leading-relaxed">
-                For legal and data protection enquiries please email hello@scudosystems.com with the subject "Legal Enquiry".
+                For legal and data protection enquiries please email scudosystems-team@proton.me with the subject "Legal Enquiry".
               </p>
             </div>
 
