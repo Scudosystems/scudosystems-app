@@ -35,9 +35,9 @@
   <div class="toast" id="toast"></div>
   <script>
     const data={
-      'VN71KLP':{state:'valid',title:'Valid parking session',icon:'✓',status:'Paid and active',area:'Zone VP1 · Main car park',tariff:'£4 · 4 hours',until:'Today, 18:42',reference:'PARK-04182',action:'Mark as checked'},
-      'PE20YTR':{state:'expired',title:'Parking session expired',icon:'!',status:'Review required',area:'Zone VP2 · Away supporter parking',tariff:'£4 · 4 hours',until:'Expired 18 minutes ago',reference:'PARK-04161',action:'Send payment reminder'},
-      'RA66NGE':{state:'whitelist',title:'Whitelisted vehicle',icon:'★',status:'Permit / guest list',area:'Zone VP3 · Event access',tariff:'Guest whitelist',until:'Valid until 23:59 today',reference:'WL-20017',action:'Mark as checked'}
+      'VN71KLP':{state:'valid',title:'Valid parking session',icon:'✓',status:'Paid and active',area:'Zone E1 · Main car park',tariff:'£4 · 4 hours',until:'Today, 18:42',reference:'PARK-04182',action:'Mark as checked'},
+      'PE20YTR':{state:'expired',title:'Parking session expired',icon:'!',status:'Review required',area:'Zone E2 · Visitor parking',tariff:'£4 · 4 hours',until:'Expired 18 minutes ago',reference:'PARK-04161',action:'Send payment reminder'},
+      'RA66NGE':{state:'whitelist',title:'Whitelisted vehicle',icon:'★',status:'Permit / guest list',area:'Zone E3 · Event access',tariff:'Guest whitelist',until:'Valid until 23:59 today',reference:'WL-20017',action:'Mark as checked'}
     };
     const input=document.getElementById('plateInput'),result=document.getElementById('result'),audit=document.getElementById('audit'),toast=document.getElementById('toast');
     function normalise(v){return v.toUpperCase().replace(/[^A-Z0-9]/g,'')}

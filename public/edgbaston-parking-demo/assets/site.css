@@ -111,7 +111,7 @@ body { background: #0b0d12; }
 .panel-tag { background:rgba(227,6,59,.16); color:#ffb7c6; }
 .alert { background:rgba(227,6,59,.12); border-color:rgba(227,6,59,.28); }
 
-/* Villa Park proposal colourway. This is a Scudo Systems concept, not club branding. */
+/* Edgbaston proposal colourway. This is a Scudo Systems concept, not club branding. */
 :root { --old-gold:#670e36; --gold-bright:#95bfe5; --ink:#111d34; --cream:#faf7f8; --mist:#0d1424; }
 .demo-ribbon { color:#cdeaff; border-bottom-color:rgba(149,191,229,.42); }
 .brandbar { background:linear-gradient(115deg,#470622,#670e36 50%,#95bfe5); }
