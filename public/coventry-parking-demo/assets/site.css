@@ -164,6 +164,7 @@ body { background: #0b0d12; }
 :root { --old-gold:#2868e8; --gold-bright:#4ab4f4; --ink:#082a4c; --cream:#f8fbff; --mist:#061525; }
 .demo-ribbon{color:#bfe7ff;border-bottom-color:rgba(74,180,244,.52)}
 .brandbar{background:linear-gradient(115deg,#082a4c,#123f71 55%,#2868e8)}
+.brand{color:#fff}
 .payment-layout{background:radial-gradient(circle at 10% 15%,rgba(74,180,244,.34),transparent 28%),radial-gradient(circle at 90% 75%,rgba(40,104,232,.24),transparent 30%),#061525}
 .intro .eyebrow{color:#9cdefe}.intro h1 span{color:#4ab4f4}.stat-band{background:rgba(40,104,232,.38);border-color:rgba(74,180,244,.45)}
 .payment-card{border-color:rgba(74,180,244,.84)}.payment-card:before,.checkout{background:linear-gradient(110deg,#2868e8,#4ab4f4,#2868e8);color:#fff}.duration.active{background:#123f71;border-color:#4ab4f4}
