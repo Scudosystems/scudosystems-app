@@ -160,3 +160,4 @@ body { background: #0b0d12; }
 .intro .eyebrow{color:#95eaeb}.intro h1 span{color:#ffe600}.stat-band{background:rgba(75,182,184,.42);border-color:rgba(255,230,0,.36)}
 .payment-card{border-color:rgba(75,182,184,.85)}.payment-card:before,.checkout{background:linear-gradient(110deg,#4bb6b8,#ffe600,#4bb6b8);color:#0e203d}.duration.active{background:#203c69;border-color:#ffe600}
 .dash-page{background:radial-gradient(circle at 8% 0%,rgba(75,182,184,.42),transparent 27%),#0e203d}.dash-top{border-bottom-color:#4bb6b8}.dash-hero{background:linear-gradient(115deg,#152b50,#203c69 55%,#4bb6b8)}.range-tabs button.active,.export{background:#203c69;border-color:#4bb6b8}.fill{background:linear-gradient(90deg,#4bb6b8,#ffe600)}.bar{background:linear-gradient(#ffe600,#4bb6b8)}.panel-tag{background:rgba(75,182,184,.16);color:#bdf9f9}.alert{background:rgba(32,60,105,.4);border-color:rgba(75,182,184,.32)}
+.dash-hero p,.hero-meta span,.hero-meta strong,.sessions .plate{color:#000}
